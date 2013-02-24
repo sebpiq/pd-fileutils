@@ -24,6 +24,6 @@
   "license": "Standard Improved BSD License",
   "devDependencies": {
     "grunt": "",
-    "grunt-mocha-test": ""
+    "grunt-simple-mocha": ""
   }
 }
