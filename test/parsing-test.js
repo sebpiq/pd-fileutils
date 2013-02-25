@@ -112,7 +112,7 @@ describe('parsing', function() {
           {id: 1, proto: 'print', args: ['bla'], guiData: {x: 14, y: 34}},
         ],
         connections: [
-          { source: [0, 0], sink: [1, 0] }
+          { source: {id: 0, port: 0}, sink: {id: 1, port: 0} }
         ]
       })
     })
@@ -143,7 +143,6 @@ describe('parsing', function() {
       })
     })
 
-
     it('should parse subpatches rightly', function() {
       var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'subpatches.pd')).toString()
         , patch = parsing.parse(patchStr)
@@ -160,9 +159,9 @@ describe('parsing', function() {
           {id: 2, proto: 'dac~', args: [], guiData: {x: 80, y: 175}}
         ],
         connections: [
-          {source: [0, 0], sink: [1, 0]},
-          {source: [1, 0], sink: [2, 0]},
-          {source: [1, 0], sink: [2, 1]}
+          {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
+          {source: {id: 1, port: 0}, sink: {id: 2, port: 0}},
+          {source: {id: 1, port: 0}, sink: {id: 2, port: 1}}
         ]
       })
 
@@ -175,8 +174,8 @@ describe('parsing', function() {
           {id: 4, subpatch: null},
         ],
         connections: [
-          {source: [0, 0], sink: [1, 0]},
-          {source: [2, 0], sink: [3, 0]}
+          {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
+          {source: {id: 2, port: 0}, sink: {id: 3, port: 0}}
         ]
       })
 
@@ -186,7 +185,7 @@ describe('parsing', function() {
           {id: 1, proto: 'phasor~', args: [-440], guiData: {x: 66, y: 32}}
         ],
         connections: [
-          {source: [1, 0], sink: [0, 0]}
+          {source: {id: 1, port: 0}, sink: {id: 0, port: 0}}
         ]
       })
 
