@@ -139,15 +139,18 @@ describe('parsing', function() {
           + '#X obj 19 370 osc~ 440;'
         , patch = parsing.parse(patchStr)
 
-      patch.nodes[0].data = roundArray(patch.nodes[0].data, 1)
+      patch.nodes[0].subpatch.nodes[0].data = roundArray(patch.nodes[0].subpatch.nodes[0].data, 1)
 
       assert.deepEqual(patch, {
         nodes: [
-          {id: 0, proto: 'table', args: ['myTable', 35], data:
-            [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
-            1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4,
-            2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 0, 0, 0, 0, 0]
-          },
+          {id: 0, subpatch: {
+            nodes: [{id: 0, proto: 'table', args: ['myTable', 35], data:
+              [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
+              1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4,
+              2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 0, 0, 0, 0, 0]
+            }],
+            connections: []
+          }},
           {id: 1, proto: 'osc~', args: [440], guiData: {x: 19, y: 370}},
         ],
         connections: []
@@ -162,7 +165,7 @@ describe('parsing', function() {
         assert.throws(function() {
           var patch = parsing.parse(patchStr)
         })
-    });
+    })
 
     it('should fail with an unknown chunk', function() {
         var patchStr = '#N canvas 778 17 450 300 10;\n'
@@ -170,9 +173,9 @@ describe('parsing', function() {
           + '#WEIRD dac~ 14 34 dac~;\n'
           + '#X connect 0 0 1 0;'
         assert.throws(function() {
-          var patch = parsing.parse(patchStr);
+          var patch = parsing.parse(patchStr)
         })
-    });
+    })
 
   })
 

@@ -1,1 +1,1 @@
-exports.parse = require('lib/parsing').parse
+exports.parse = require('./lib/parsing').parse

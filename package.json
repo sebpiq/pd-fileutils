@@ -12,6 +12,7 @@
   "scripts": {
     "test": "grunt test"
   },
+  "bin": { "pd-fileutils": "./bin/pd-fileutils" },
   "repository": {
     "type": "git",
     "url": "git@github.com:sebpiq/pd-fileutils.git"
@@ -20,7 +21,11 @@
     "pd",
     "puredata"
   ],
-  "author": "Sébastien Piquemal",
+  "author": {
+    "name": "Sébastien Piquemal",
+    "email": "sebpiq@gmail.com",
+    "url": "http://funktion.fm/"
+  },
   "license": "Standard Improved BSD License",
   "devDependencies": {
     "grunt": "",
