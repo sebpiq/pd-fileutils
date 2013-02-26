@@ -1,7 +1,18 @@
 #!/usr/bin/env node
-console.log(__dirname)
-var pdFileUtils = require('../index');
 
-var args = process.argv.slice(2);
-console.log('ARRGS', args);
+var pdFileUtils = require('../index')
+  , args = process.argv.slice(2)
+  , fs = require('fs')
+  , path = require('path')
+
+if (!args[0]) console.error('usage : pd-fileutils <infile> > <outfile>')
+else {
+  var infile = path.resolve(process.cwd, args[0])
+  fs.readFile(infile, function (err, data) {
+    if (err) throw err;
+    var patch = pdFileUtils.parse(data.toString())
+    process.stdout.write(pdFileUtils.renderSvg(patch))
+  })
+}
+
 
