@@ -12,7 +12,7 @@
 #X restore 183 83 pd subSubPatch;
 #X connect 0 0 1 0;
 #X connect 2 0 3 0;
-#X restore 79 117 pd mySubpatch;
+#X restore 79 117 pd subPatch;
 #X obj 80 175 dac~;
 #X connect 0 0 1 0;
 #X connect 1 0 2 0;

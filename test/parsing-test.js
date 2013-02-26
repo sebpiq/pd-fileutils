@@ -127,18 +127,22 @@ describe('parsing', function() {
 
       assert.deepEqual(patch, {
         nodes: [
-          {id: 0, subpatch: null},
+          {id: 0, proto: 'graph', args: [], guiData: {x: 157, y: 26}, subpatch: null},
           {id: 1, proto: 'osc~', args: [440], guiData: {x: 19, y: 370}},
         ],
         connections: []
       })
 
       assert.deepEqual(array, {
-        nodes: [{id: 0, proto: 'table', args: ['myTable', 35], data:
-          [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
-          1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4,
-          2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 0, 0, 0, 0, 0]
-        }],
+        nodes: [
+          {
+            id: 0, proto: 'table', args: ['myTable', 35],
+            data:
+              [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1,
+              1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4,
+              2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 0, 0, 0, 0, 0]
+          }
+        ],
         connections: []
       })
     })
@@ -155,7 +159,7 @@ describe('parsing', function() {
       assert.deepEqual(patch, {
         nodes: [
           {id: 0, proto: 'osc~', args: [], guiData: {x: 78, y: 81}},
-          {id: 1, subpatch: null},
+          {id: 1, proto: 'pd', args: ['subPatch'], guiData: {x: 79, y: 117}, subpatch: null},
           {id: 2, proto: 'dac~', args: [], guiData: {x: 80, y: 175}}
         ],
         connections: [
@@ -171,7 +175,7 @@ describe('parsing', function() {
           {id: 1, proto: 'delwrite~', args: ['myDel'], guiData: {x: 47, y: 83}},
           {id: 2, proto: 'delread~', args: ['myDel'], guiData: {x: 47, y: 126}},
           {id: 3, proto: 'outlet~', args: [], guiData: {x: 48, y: 165}},
-          {id: 4, subpatch: null},
+          {id: 4, proto: 'pd', args: ['subSubPatch'], guiData: {x: 183, y: 83}, subpatch: null},
         ],
         connections: [
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
