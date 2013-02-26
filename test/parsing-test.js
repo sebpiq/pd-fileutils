@@ -117,8 +117,60 @@ describe('parsing', function() {
       })
     })
 
-    it('should parse tables rightly', function() {
-      var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'tables.pd')).toString()
+    it('should parse objects and controls rightly', function() {
+      var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'node-elems.pd')).toString()
+        , patch = parsing.parse(patchStr)
+
+      assert.deepEqual(patch.nodes[0], 
+        {id: 0, proto: 'floatatom', args: [5, 0, 0, 0, '-', '-', '-'], guiData: {x: 73, y: 84}})
+
+      assert.deepEqual(patch.nodes[1], 
+        {id: 1, proto: 'msg', args: [89], guiData: {x: 73, y: 43}})
+
+      assert.deepEqual(patch.nodes[2], 
+        {id: 2, proto: 'bng', args: [15, 250, 50, 0, 'empty', 'empty', 'empty',
+          17, 7, 0, 10, -262144, -1, -1], guiData: {x: 142, y: 42}})
+
+      assert.deepEqual(patch.nodes[3], 
+        {id: 3, proto: 'tgl', args: [15, 0, 'empty', 'empty', 'empty',
+          17, 7, 0, 10, -262144, -1, -1, 10, 10], guiData: {x: 144, y: 85}})
+
+      assert.deepEqual(patch.nodes[4], 
+        {id: 4, proto: 'nbx', args: [5, 14, -1e+37, 1e+37, 0, 0, 'empty', 'empty', 'empty',
+          0, -8, 0, 10, -262144, -1, -1, 10, 256], guiData: {x: 180, y: 42}})
+
+      assert.deepEqual(patch.nodes[5], 
+        {id: 5, proto: 'hsl', args: [128, 15, 0, 127, 0, 0, 'empty', 'empty', 'empty',
+          -2, -8, 0, 10, -262144, -1, -1, 0, 1], guiData: {x: 242, y: 86}})
+
+      assert.deepEqual(patch.nodes[6], 
+        {id: 6, proto: 'vradio', args: [15, 1, 0, 8, 'empty', 'empty', 'empty',
+          0, -8, 0, 10, -262144, -1, -1, 0], guiData: {x: 249, y: 137}})
+
+      assert.deepEqual(patch.nodes[7], 
+        {id: 7, proto: 'vu', args: [15, 120, 'empty', 'empty',
+          -1, -8, 0, 10, -66577, -1, 1, 0], guiData: {x: 89, y: 141}})
+
+      assert.deepEqual(patch.nodes[8], 
+        {id: 8, proto: 'cnv', args: [15, 100, 60, 'empty', 'empty', 'empty',
+          20, 12, 0, 14, -233017, -66577, 0], guiData: {x: 317, y: 154}})
+
+      assert.deepEqual(patch.nodes[9], 
+        {id: 9, proto: 'symbolatom', args: [10, 0, 0, 0, '-', '-', '-'], guiData: {x: 255, y: 38}},
+        {id: 10, proto: 'text', args: ['bla bla bla bla'], guiData: {x: 158, y: 309}})
+
+      assert.deepEqual(patch.connections, [
+        { source: {id: 1, port: 0}, sink: {id: 0, port: 0} },
+        { source: {id: 2, port: 0}, sink: {id: 0, port: 0} },
+        { source: {id: 2, port: 0}, sink: {id: 3, port: 0} },
+        { source: {id: 4, port: 0}, sink: {id: 3, port: 0} },
+        { source: {id: 6, port: 0}, sink: {id: 4, port: 0} }
+      ])
+
+    })
+
+    it('should parse array rightly', function() {
+      var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'arrays.pd')).toString()
         , patch = parsing.parse(patchStr)
 
       var array = patch.nodes[0].subpatch
