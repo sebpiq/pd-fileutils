@@ -1,4 +1,4 @@
-Copyright (c) 2012 Chris McCormick, Sébastien Piquemal <sebpiq@gmail.com>
+Copyright (c) 2012 Sébastien Piquemal <sebpiq@gmail.com>
 All rights reserved.
 
 The following terms (the "Standard Improved BSD License") apply to all

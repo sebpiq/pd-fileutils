@@ -5,7 +5,7 @@ Pure Data file utilities
 
 This library is a set of tools for handling pure data files.
 
-At the moment it can only parse `.pd` files and render `svg` images from them. Pd files are parsed to a normal JavaScript object, which also means that you can manipulate them very simply (but cannot re-render to `.pd` at the moment).
+At the moment it can only parse `.pd` files and render `svg` images from them. Pd files are parsed to a standard JavaScript object, which you can then manipulate very easily (but cannot re-render to `.pd` at the moment :(  ).
 
 
 Installation
@@ -18,6 +18,13 @@ Installation is easier with the node package manager [npm](https://npmjs.org/) :
 ```
 npm install pd-fileutils
 ```
+
+To install the command-line tool globally, you might want to run `npm` with the `-g` option. Note that in this case you might need admin rights :
+
+```
+npm install -g pd-fileutils
+```
+
 
 Command-line tool
 ==================
