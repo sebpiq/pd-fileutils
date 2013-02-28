@@ -1,0 +1,33 @@
+(function() {
+
+
+var pdfu = this.pdfu = {}
+  , exports = {
+    'underscore': this._
+  }
+  , modules = {}
+  , require = function(name) {
+    name = name.split('/').slice(-1)[0]
+    return ((modules[name] && modules[name].exports)
+      || exports[name] || window[name])
+  }
+
+
+;(function(module, exports, require){
+  {{{Patch}}}
+})(modules.Patch = {}, exports.Patch = {}, require)
+
+;(function(module, exports, require){
+  {{{parsing}}}
+})(modules.parsing = {}, exports.parsing = {}, require)
+
+;(function(module, exports, require){
+  {{{svgRendering}}}
+})(modules['svg-rendering'] = {}, exports['svg-rendering'] = {}, require)
+
+;(function(exports){
+  {{{index}}}
+})(pdfu)
+
+
+})(window)

@@ -31,6 +31,9 @@
   "license": "Standard Improved BSD License",
   "devDependencies": {
     "grunt": "",
-    "grunt-simple-mocha": ""
+    "grunt-simple-mocha": "",
+    "grunt-contrib-uglify": "",
+    "grunt-contrib-concat": "",
+    "mustache": ""
   }
 }
