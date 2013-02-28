@@ -2,10 +2,53 @@
 <html>
 <head>
 <title>Title of the document</title>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="dist/pd-fileutils-latest.js"></script>
+
 </head>
 
 <body>
-The content of the document......
+
+  <div id="json">
+    <pre><code></code></pre>
+  </div>
+
+  <div id="pd">
+    <pre><code></code></pre>
+  </div>
+
+  <div id="loading">loading ...</div>
+
+  <script>
+    var gistParamRe = /gist=(\w*)/
+      , searchResult
+      , gistLoaded = function(resp) {
+        var files = resp.data.files
+          , content = files[Object.keys(files)[0]].content
+          , patch = pdfu.parse(content)
+          , patchSvg = pdfu.renderSvg(patch)
+          , renderInterval = setInterval(function() {
+            if ($('svg')) {
+              $('svg').detach().prependTo('body')
+              clearInterval(renderInterval)
+              $('#loading').hide()
+            }
+          })
+        $('#json code').html(JSON.stringify(patch))
+        $('#pd code').html(content)
+      }
+
+    if (searchResult = gistParamRe.exec(window.location.search)) {
+      var gistUrl = 'https://api.github.com/gists/'
+        + searchResult[1] + '?callback=gistLoaded'
+      $('<script>', {src: gistUrl}).appendTo('body')
+    }
+
+  </script>
+
 </body>
 
 </html>
