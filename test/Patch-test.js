@@ -3,21 +3,21 @@ var assert = require('assert')
 
 describe('Patch', function() {
 
-  describe('#getObject', function() {
+  describe('#getNode', function() {
 
     it('should return the right object if existing', function() {
       var patch = new Patch({
         nodes: [ {id: 78, attr1: 90}, {id: 56, attr1: 88}, {id: 2, attr1: 5} ]
       })
-      assert.deepEqual(patch.getObject(56), {id: 56, attr1: 88})
-      assert.deepEqual(patch.getObject(2), {id: 2, attr1: 5})
+      assert.deepEqual(patch.getNode(56), {id: 56, attr1: 88})
+      assert.deepEqual(patch.getNode(2), {id: 2, attr1: 5})
     })
 
     it('should return null if object unknown', function() {
       var patch = new Patch({
         nodes: [ {id: 78, attr1: 90}, {id: 56, attr1: 88}, {id: 2, attr1: 5} ],
       })
-      assert.equal(patch.getObject(57), null)
+      assert.equal(patch.getNode(57), null)
     })
 
   })

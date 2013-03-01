@@ -29,25 +29,30 @@ var _ = require('underscore')
 
 var Patch = module.exports = function(obj) { _.extend(this, obj) }
 
-Patch.prototype.getObject = function(id) {
-  return _.find(this.nodes, function(node) { return node.id === id }) || null
-}
 
-Patch.prototype.guessPortlets = function() {
-  var self = this
-  _.each(this.nodes, function(node) {
-    node.outlets = _.reduce(self.connections, function(memo, conn) {
-      if (conn.source.id === node.id) {
-        return Math.max(memo, conn.source.port)
-      } else return memo
-    }, -1) + 1
-    node.inlets = _.reduce(self.connections, function(memo, conn) {
-      if (conn.sink.id === node.id) {
-        return Math.max(memo, conn.sink.port)
-      } else return memo
-    }, -1) + 1
-  })
-}
+_.extend(Patch.prototype, {
+
+  getNode: function(id) {
+    return _.find(this.nodes, function(node) { return node.id === id }) || null
+  },
+
+  guessPortlets: function() {
+    var self = this
+    _.each(this.nodes, function(node) {
+      node.outlets = _.reduce(self.connections, function(memo, conn) {
+        if (conn.source.id === node.id) {
+          return Math.max(memo, conn.source.port)
+        } else return memo
+      }, -1) + 1
+      node.inlets = _.reduce(self.connections, function(memo, conn) {
+        if (conn.sink.id === node.id) {
+          return Math.max(memo, conn.sink.port)
+        } else return memo
+      }, -1) + 1
+    })
+  }
+
+})
 
 })(modules.Patch = {}, exports.Patch = {}, require)
 
@@ -299,12 +304,31 @@ var opts = {
 exports.render = function(patch) {
   d3.select('svg').remove()
   var svg = d3.select('body').append('svg')
-    , connections, objects
+      .attr('style', 'font-family:monospace')
+    , connections, nodes
   svg.attr('xmlns', 'http://www.w3.org/2000/svg')
   svg.attr('version', '1.1')
 
   patch = new Patch(patch)
   patch.guessPortlets()
+  patch.nodes = _.map(patch.nodes, function(node) {
+    if (node.proto === 'msg') return new MsgRenderer(node)
+    else if (node.proto === 'text') return new TextRenderer(node)
+    else if (node.proto === 'floatatom' || node.proto === 'symbolatom') return new AtomBoxRenderer(node)
+    else if (node.proto === 'bng') return new BngRenderer(node)
+    else return new ObjectRenderer(node)
+  })
+
+  // Create the nodes
+  nodes = svg.selectAll('g.node')
+    .data(patch.nodes)
+    .enter()
+    .append('g')
+    .attr('transform', function(renderer) {
+      return 'translate(' + renderer.getX() + ',' + renderer.getY() + ')'
+    })
+    .attr('class', 'node')
+    .each(function(renderer, i) { renderer.render(d3.select(this)) })
 
   // Create the connections
   connections = svg.selectAll('line.connection')
@@ -314,83 +338,23 @@ exports.render = function(patch) {
     .attr('class', 'connection')
     .attr('style', 'stroke:black;stroke-width:2px;')
     .each(function(conn) {
+      var sourceRenderer = patch.getNode(conn.source.id)
+        , sinkRenderer = patch.getNode(conn.sink.id)
+
       d3.select(this)
         .attr('x1', function(conn) {
-          var obj = patch.getObject(conn.source.id)
-            , outlet = conn.source.port
-          var res = getOutletX(obj, outlet, opts) + opts.portletWidth/2
-          if (isNaN(res)) debugger;
-          return res
+          return sourceRenderer.getOutletX(conn.source.port) + opts.portletWidth/2
         })
         .attr('y1', function(conn) {
-          var obj = patch.getObject(conn.source.id)
-            , outlet = conn.source.port
-          return getOutletY(obj, outlet, opts) + opts.portletHeight
+          return sourceRenderer.getOutletY(conn.source.port) + opts.portletHeight
         })
         .attr('x2', function(conn) {
-          var obj = patch.getObject(conn.sink.id)
-            , inlet = conn.sink.port
-          return getInletX(obj, inlet, opts) + opts.portletWidth/2 
+          return sinkRenderer.getInletX(conn.sink.port) + opts.portletWidth/2 
         })
         .attr('y2', function(conn) {
-          var obj = patch.getObject(conn.sink.id)
-            , inlet = conn.sink.port
-          return getInletY(obj, inlet, opts)
+          return sinkRenderer.getInletY(conn.sink.port)
         })
     })
-
-  // Create the base object groups
-  objects = svg.selectAll('g.objectGroup')
-    .data(patch.nodes)
-    .enter()
-    .append('g')
-    .attr('transform', function(obj) {
-      return 'translate(' + getObjX(obj, opts) + ',' + getObjY(obj, opts) + ')'
-    })
-    .attr('class', 'objectGroup')
-
-  // Object box
-  objects
-    .append('rect')
-    .attr('class', 'object')
-    .attr('width', function(obj) { return getObjW(obj, opts) })
-    .attr('height', function(obj) { return getObjH(obj, opts) })
-    .attr('style', 'stroke:black;fill:white;')
-
-  // Object text
-  objects
-    .append('text')
-    .attr('class', 'objectType')
-    .text(function(obj) { return getObjText(obj, opts) })
-    .attr('dy', function(obj) { return getObjTextY(obj, opts) })
-    .attr('dx', opts.portletWidth)
-    .attr('style', 'font-size:10px;')
-
-  // Inlets
-  objects
-    .selectAll('rect.inlet')
-    .data(function(obj) {return _.times(obj.inlets, function() { return obj })})
-    .enter()
-    .append('rect')
-    .classed('inlet', true)
-    .classed('portlet', true)
-    .attr('width', opts.portletWidth)
-    .attr('height', opts.portletHeight)
-    .attr('x', function(obj, i) { return getInletRelX(obj, i, opts) })
-    .attr('y', function(obj, i) { return getInletRelY(obj, i, opts) })
-
-  // Outlets
-  objects
-    .selectAll('rect.outlet')
-    .data(function(obj) {return _.times(obj.outlets, function() { return obj })})
-    .enter()
-    .append('rect')
-    .classed('outlet', true)
-    .classed('portlet', true)
-    .attr('width', opts.portletWidth)
-    .attr('height', opts.portletHeight)
-    .attr('x', function(obj, i) { return getOutletRelX(obj, i, opts) })
-    .attr('y', function(obj, i) { return getOutletRelY(obj, i, opts) })
 
   var rendered = d3.select('body')[0][0].innerHTML
   rendered = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" '
@@ -399,54 +363,143 @@ exports.render = function(patch) {
 
 }
 
+//==================== Node renderers ====================//
 
-// Returns object's X in the canvas
-var getObjX = function(obj, opts) { return obj.guiData.x * opts.ratio }
+var NodeRenderer = function(node) {
 
-// Returns object's Y in the canvas
-var getObjY = function(obj, opts) { return obj.guiData.y * opts.ratio }
+  this.node = node
+  this.id = node.id
 
-// Returns text to display on the object 
-var getObjText = function(obj, opts) { return obj.proto + ' ' + obj.args.join(' ') }
-
-// Returns Y of the text in the object's root element 
-var getObjTextY = function(obj, opts) { return getObjH(obj, opts)/2 + opts.portletHeight/2 }
-
-// Returns object's height
-var getObjH = function(obj, opts) { return opts.objMinHeight }
-
-// Returns object's width
-var getObjW = function(obj, opts) {
-  var maxPortlet = Math.max(obj.inlets, obj.outlets)
-    , textLength = getObjText(obj, opts).length * 5
-  return Math.max((maxPortlet-1) * opts.objMinWidth, opts.objMinWidth, textLength)
 }
 
-// Returns outlet's absolute X in the canvas
-getOutletX = function(obj, outlet, opts) {
-  return getOutletRelX(obj, outlet, opts) + getObjX(obj, opts)
+_.extend(NodeRenderer.prototype, {
+
+  // Returns node X in the canvas
+  getX: function() { return this.node.guiData.x * opts.ratio },
+
+  // Returns node Y in the canvas
+  getY: function() { return this.node.guiData.y * opts.ratio },
+
+  // Returns outlet's absolute X in the canvas
+  getOutletX: function(outlet) {
+    return this.getOutletRelX(outlet) + this.getX()
+  },
+
+  // Returns intlet's absolute X in the canvas
+  getInletX: function(inlet) {
+    return this.getInletRelX(inlet) + this.getX()
+  },
+
+  // Returns outlet's Y in the canvas
+  getOutletY: function(outlet) {
+    return this.getOutletRelY(outlet) + this.getY()
+  },
+
+  // Returns inlet's Y in the canvas
+  getInletY: function(inlet) {
+    return this.getInletRelY(inlet) + this.getY()
+  },
+
+  // ---- Methods to implement ---- //
+  // Do the actual rendering in svg group `g`.
+  render: function(g) { throw new Error('Implement me') },
+
+  // Returns outlet X relatively to the node
+  getOutletRelX: function(outlet) { throw new Error('Implement me') },
+
+  // Returns inlet X relatively to the node
+  getInletRelX: function(inlet) { throw new Error('Implement me') },
+
+  // Returns outlet Y relatively to the node
+  getOutletRelY: function(outlet) { throw new Error('Implement me') },
+
+  // Returns inlet Y relatively to the node
+  getInletRelY: function(inlet) { throw new Error('Implement me') },
+
+})
+
+
+var ObjectRenderer = function() {
+  NodeRenderer.prototype.constructor.apply(this, arguments)
 }
 
-// Returns intlet's absolute X in the canvas
-getInletX = function(obj, inlet, opts) {
-  return getInletRelX(obj, inlet, opts) + getObjX(obj, opts)
-}
+_.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
 
-// Returns outlet's Y in the canvas
-getOutletY = function(obj, outlet, opts) {
-  return getOutletRelY(obj, outlet, opts) + getObjY(obj, opts)
-}
+  render: function(g) {
+    this.renderBox(g)
+    this.renderText(g)
+    this.renderOutlets(g)
+    this.renderInlets(g)
+  },
 
-// Returns inlet's Y in the canvas
-getInletY = function(obj, inlet, opts) {
-  return getInletRelY(obj, inlet, opts) + getObjY(obj, opts)
-}
+  renderBox: function(g) {
+    g.append('rect')
+      .attr('class', 'box')
+      .attr('width', this.getW())
+      .attr('height', this.getH())
+      .attr('style', 'stroke:black;fill:white;')
+  },
 
-// Get portlet X relatively to the object
-var _getPortletRelX = function(inOrOutlets) {
-  return function(obj, portlet, opts) {
-    var width = getObjW(obj, opts)
-      , n = obj[inOrOutlets]
+  renderText: function(g) {
+    g.append('text')
+      .attr('class', 'proto')
+      .text(this.getText())
+      .attr('dy', this.getTextY())
+      .attr('dx', opts.portletWidth)
+      .attr('style', 'font-size:10px;')
+  },
+
+  renderInlets: function(g) { this._genericRenderPortlets('inlet', g) },
+  renderOutlets: function(g) { this._genericRenderPortlets('outlet', g) },
+  _genericRenderPortlets: function(portletType, g) {
+    var portletTypeCap = portletType.substr(0, 1).toUpperCase() + portletType.substr(1)
+      , self = this
+    g.selectAll('rect.' + portletType)
+      .data(_.range(this.node[portletType+'s']))
+      .enter()
+      .append('rect')
+      .classed(portletType, true)
+      .classed('portlet', true)
+      .attr('width', opts.portletWidth)
+      .attr('height', opts.portletHeight)
+      .attr('x', function(i) { return self['get' + portletTypeCap + 'RelX'](i) })
+      .attr('y', function(i) { return self['get' + portletTypeCap + 'RelY'](i) })
+  },
+
+  // Returns object height
+  getH: function() { return opts.objMinHeight },
+
+  // Returns object width
+  getW: function() {
+    var maxPortlet = Math.max(this.node.inlets, this.node.outlets)
+      , textLength = this.getText().length * 6.5
+    return Math.max((maxPortlet-1) * opts.objMinWidth, opts.objMinWidth, textLength)
+  },
+
+  // Returns text to display on the object 
+  getText: function() { return this.node.proto + ' ' + this.node.args.join(' ') },
+
+  // Returns text Y relatively to the object 
+  getTextY: function() { return this.getH()/2 + opts.portletHeight/2 },
+
+  // ---- Implement virtual methods ---- //
+  getOutletRelX: function(outlet) {
+    return this._genericPortletRelX('outlets', outlet)
+  },
+
+  getInletRelX: function(inlet) {
+    return this._genericPortletRelX('inlets', inlet)
+  },
+
+  getOutletRelY: function(outlet) {
+    return this.getH() - opts.portletHeight
+  },
+
+  getInletRelY: function(inlet) { return 0 },
+
+  _genericPortletRelX: function(inOrOutlets, portlet) {
+    var width = this.getW()
+      , n = this.node[inOrOutlets]
     if (portlet === 0) return 0;
     else if (portlet === n-1) return width - opts.portletWidth;
     else {
@@ -455,16 +508,124 @@ var _getPortletRelX = function(inOrOutlets) {
       return portlet * (opts.portletWidth + a);
     }
   }
-}
-var getOutletRelX = _getPortletRelX('outlets')
-var getInletRelX = _getPortletRelX('inlets')
 
-var getOutletRelY = function(obj, outlet, opts) {
-  return getObjH(obj, opts) - opts.portletHeight
+})
+
+
+var MsgRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
 }
 
-// Returns inlet's Y in the object's root element
-var getInletRelY = function() { return 0 }
+_.extend(MsgRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+
+    var r = this.getH() * 0.75
+      , teta = Math.asin(this.getH() / (2 * r)) 
+      , arcPath = d3.svg.arc()({  
+          innerRadius: r,
+          outerRadius: r,
+          startAngle: -Math.PI / 2 - teta,
+          endAngle: -Math.PI / 2 + teta
+        })
+      , linePath = d3.svg.line()([
+          [this.getW(), 0], [0, 0],
+          [0, this.getH()], [this.getW(), this.getH()]
+        ])
+
+    g.append('svg:path')
+      .attr('d', linePath)
+      .attr('style', 'stroke:black;fill:white;')
+
+    g.append('svg:path')
+      .attr('d', arcPath)
+      .attr('transform', 'translate(' + (this.getW() + r * Math.cos(teta)) + ',' + this.getH()/2 + ')')
+      .attr('style', 'stroke:black;fill:white;')
+  },
+
+  getText: function() { return this.node.args.join(' ') }
+
+})
+
+
+var AtomBoxRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(AtomBoxRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+
+    var r = this.getH() * 0.4
+      , arcPath = d3.svg.arc()({  
+          innerRadius: r,
+          outerRadius: r,
+          startAngle: 0,
+          endAngle: Math.PI / 2
+        })
+      , linePath = d3.svg.line()([
+          [this.getW() - r, 0], [0, 0], [0, this.getH()],
+          [this.getW(), this.getH()], [this.getW(), r]
+        ])
+
+    g.append('svg:path')
+      .attr('d', linePath)
+      .attr('style', 'stroke:black;fill:white;')
+
+    g.append('svg:path')
+      .attr('d', arcPath)
+      .attr('transform', 'translate(' + (this.getW() - r) + ',' + r + ')')
+      .attr('style', 'stroke:black;fill:white;')
+  },
+
+  getText: function() { return this.node.args.slice(0, 1).join(' ') }
+
+})
+
+
+var BngRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(BngRenderer.prototype, ObjectRenderer.prototype, {
+
+  render: function(g) {
+    g.append('rect')
+      .attr('class', 'box')
+      .attr('width', this.getW())
+      .attr('height', this.getH())
+      .attr('style', 'stroke:black;fill:white;')
+
+    g.append('circle')
+      .attr('cx', this.getW()/2)
+      .attr('cy', this.getH()/2)
+      .attr('r', this.getW()/2)
+      .attr('style', 'stroke:black;fill:white;')
+
+    this.renderOutlets(g)
+    this.renderInlets(g)
+  },
+
+  getW: function() { return 20 },
+  getH: function() { return 20 }
+
+})
+
+
+var TextRenderer = function() {
+  NodeRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(TextRenderer.prototype, NodeRenderer.prototype, {
+
+  render: function(g) {
+    g.append('text')
+      .attr('class', 'comment')
+      .attr('style', 'font-size:10px;')
+      .text(this.node.args[0])
+  }
+
+})
 
 })(modules['svg-rendering'] = {}, exports['svg-rendering'] = {}, require)
 
