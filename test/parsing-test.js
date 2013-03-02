@@ -133,11 +133,11 @@ describe('parsing', function() {
 
       assert.deepEqual(patch.nodes[3], 
         {id: 3, proto: 'tgl', args: [15, 0, 'empty', 'empty', 'empty',
-          17, 7, 0, 10, -262144, -1, -1, 10, 10], guiData: {x: 144, y: 85}})
+          17, 7, 0, 10, -262144, -1, -1, 0, 10], guiData: {x: 144, y: 85}})
 
       assert.deepEqual(patch.nodes[4], 
         {id: 4, proto: 'nbx', args: [5, 14, -1e+37, 1e+37, 0, 0, 'empty', 'empty', 'empty',
-          0, -8, 0, 10, -262144, -1, -1, 10, 256], guiData: {x: 180, y: 42}})
+          0, -8, 0, 10, -262144, -1, -1, 0, 256], guiData: {x: 180, y: 42}})
 
       assert.deepEqual(patch.nodes[5], 
         {id: 5, proto: 'hsl', args: [128, 15, 0, 127, 0, 0, 'empty', 'empty', 'empty',
@@ -156,8 +156,19 @@ describe('parsing', function() {
           20, 12, 0, 14, -233017, -66577, 0], guiData: {x: 317, y: 154}})
 
       assert.deepEqual(patch.nodes[9], 
-        {id: 9, proto: 'symbolatom', args: [10, 0, 0, 0, '-', '-', '-'], guiData: {x: 255, y: 38}},
+        {id: 9, proto: 'symbolatom', args: [10, 0, 0, 0, '-', '-', '-'], guiData: {x: 255, y: 38}})
+
+      assert.deepEqual(patch.nodes[10],
         {id: 10, proto: 'text', args: ['bla bla bla bla'], guiData: {x: 158, y: 309}})
+
+      assert.deepEqual(patch.nodes[11],
+        {id: 11, proto: 'vsl', args: [15, 128, 0, 127, 0, 0, 'empty', 'empty', 'empty',
+          0, -9, 0, 10, -262144, -1, -1, 0, 1], guiData: {x: 458, y: 62}})
+
+      assert.deepEqual(patch.nodes[12],
+        {id: 12, proto: 'hradio', args: [15, 1, 0, 8, 'empty', 'empty', 'empty',
+          0, -8, 0, 10, -262144, -1, -1, 0], guiData: {x: 421, y: 258}})
+      
 
       assert.deepEqual(patch.connections, [
         { source: {id: 1, port: 0}, sink: {id: 0, port: 0} },
