@@ -312,10 +312,19 @@ exports.render = function(patch) {
   patch = new Patch(patch)
   patch.guessPortlets()
   patch.nodes = _.map(patch.nodes, function(node) {
-    if (node.proto === 'msg') return new MsgRenderer(node)
-    else if (node.proto === 'text') return new TextRenderer(node)
-    else if (node.proto === 'floatatom' || node.proto === 'symbolatom') return new AtomBoxRenderer(node)
-    else if (node.proto === 'bng') return new BngRenderer(node)
+    var proto = node.proto
+    if (proto === 'msg') return new MsgRenderer(node)
+    else if (proto === 'text') return new TextRenderer(node)
+    else if (proto === 'floatatom') return new FloatAtomRenderer(node)
+    else if (proto === 'symbolatom') return new SymbolAtomRenderer(node)
+    else if (proto === 'bng') return new BngRenderer(node)
+    else if (proto === 'tgl') return new TglRenderer(node)
+    else if (proto === 'nbx') return new NbxRenderer(node)
+    else if (proto === 'hsl') return new HslRenderer(node)
+    else if (proto === 'vsl') return new VslRenderer(node)
+    else if (proto === 'hradio') return new HRadioRenderer(node)
+    else if (proto === 'vradio') return new VRadioRenderer(node)
+    else if (proto === 'vu') return new VuRenderer(node)
     else return new ObjectRenderer(node)
   })
 
@@ -325,7 +334,7 @@ exports.render = function(patch) {
     .enter()
     .append('g')
     .attr('transform', function(renderer) {
-      return 'translate(' + renderer.getX() + ',' + renderer.getY() + ')'
+      return 'translate(' + renderer.getX() + ' ' + renderer.getY() + ')'
     })
     .attr('class', 'node')
     .each(function(renderer, i) { renderer.render(d3.select(this)) })
@@ -472,7 +481,7 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
   // Returns object width
   getW: function() {
     var maxPortlet = Math.max(this.node.inlets, this.node.outlets)
-      , textLength = this.getText().length * 6.5
+      , textLength = this.getText().length * 6 + 10 // 6 = char width, 10 = padding
     return Math.max((maxPortlet-1) * opts.objMinWidth, opts.objMinWidth, textLength)
   },
 
@@ -480,7 +489,7 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
   getText: function() { return this.node.proto + ' ' + this.node.args.join(' ') },
 
   // Returns text Y relatively to the object 
-  getTextY: function() { return this.getH()/2 + opts.portletHeight/2 },
+  getTextY: function() { return this.getH()/2 + 11/2.5 }, // 11 is font height
 
   // ---- Implement virtual methods ---- //
   getOutletRelX: function(outlet) {
@@ -501,11 +510,11 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
     var width = this.getW()
       , n = this.node[inOrOutlets]
     if (portlet === 0) return 0;
-    else if (portlet === n-1) return width - opts.portletWidth;
+    else if (portlet === n-1) return width - opts.portletWidth
     else {
       // Space between portlets
-      var a = (width - n*opts.portletWidth) / (n-1);
-      return portlet * (opts.portletWidth + a);
+      var a = (width - n*opts.portletWidth) / (n-1)
+      return portlet * (opts.portletWidth + a)
     }
   }
 
@@ -539,7 +548,7 @@ _.extend(MsgRenderer.prototype, ObjectRenderer.prototype, {
 
     g.append('svg:path')
       .attr('d', arcPath)
-      .attr('transform', 'translate(' + (this.getW() + r * Math.cos(teta)) + ',' + this.getH()/2 + ')')
+      .attr('transform', 'translate(' + (this.getW() + r * Math.cos(teta)) + ' ' + this.getH()/2 + ')')
       .attr('style', 'stroke:black;fill:white;')
   },
 
@@ -574,13 +583,33 @@ _.extend(AtomBoxRenderer.prototype, ObjectRenderer.prototype, {
 
     g.append('svg:path')
       .attr('d', arcPath)
-      .attr('transform', 'translate(' + (this.getW() - r) + ',' + r + ')')
+      .attr('transform', 'translate(' + (this.getW() - r) + ' ' + r + ')')
       .attr('style', 'stroke:black;fill:white;')
-  },
-
-  getText: function() { return this.node.args.slice(0, 1).join(' ') }
+  }
 
 })
+
+var FloatAtomRenderer = function() {
+  AtomBoxRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(FloatAtomRenderer.prototype, AtomBoxRenderer.prototype, {
+
+  getText: function() { return '0' }
+
+})
+
+
+var SymbolAtomRenderer = function() {
+  AtomBoxRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(SymbolAtomRenderer.prototype, AtomBoxRenderer.prototype, {
+
+  getText: function() { return 'symbol' }
+
+})
+
 
 
 var BngRenderer = function() {
@@ -599,7 +628,7 @@ _.extend(BngRenderer.prototype, ObjectRenderer.prototype, {
     g.append('circle')
       .attr('cx', this.getW()/2)
       .attr('cy', this.getH()/2)
-      .attr('r', this.getW()/2)
+      .attr('r', this.getW()/3)
       .attr('style', 'stroke:black;fill:white;')
 
     this.renderOutlets(g)
@@ -608,6 +637,189 @@ _.extend(BngRenderer.prototype, ObjectRenderer.prototype, {
 
   getW: function() { return 20 },
   getH: function() { return 20 }
+
+})
+
+
+var TglRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(TglRenderer.prototype, ObjectRenderer.prototype, {
+
+  render: function(g) {
+    var crossPath = d3.svg.symbol()
+      .size(this.getW() * this.getH() / 3.5)
+      .type('cross')([1])
+
+    g.append('rect')
+      .attr('class', 'box')
+      .attr('width', this.getW())
+      .attr('height', this.getH())
+      .attr('style', 'stroke:black;fill:white;')
+
+    g.append('svg:path')
+      .attr('d', crossPath)
+      .attr('transform', 'rotate(' + 45 + ' ' + this.getW()/2 + ' ' + this.getH()/2
+                        + ') translate(' + this.getW()/2 + ' ' + this.getH()/2 + ')')
+      .attr('style', 'stroke:black;fill:white;')
+
+    this.renderOutlets(g)
+    this.renderInlets(g)
+  },
+
+  getW: function() { return 20 },
+  getH: function() { return 20 }
+
+})
+
+
+var NbxRenderer = function() {
+  AtomBoxRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(NbxRenderer.prototype, AtomBoxRenderer.prototype, {
+
+  renderBox: function(g) {
+    AtomBoxRenderer.prototype.renderBox.apply(this, arguments)
+    var trianglePath = d3.svg.line()([ [0, 0], [this.getW()/6, this.getH()/2], [0, this.getH()] ])
+    g.append('svg:path')
+      .attr('d', trianglePath)
+      .attr('style', 'stroke:black;fill:white;')
+  },
+
+  getText: function() { return '0' }
+
+})
+
+
+var HslRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(HslRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+    ObjectRenderer.prototype.renderBox.apply(this, arguments)
+    var cursorPath = d3.svg.line()([ [5, 0], [10, 0],
+      [10, this.getH()], [5, this.getH()], [5, 0] ])
+    g.append('svg:path')
+      .attr('d', cursorPath)
+      .attr('style', 'stroke:black;fill:black;')
+  },
+
+  getText: function() { return '' },
+  getW: function() { return 200 },
+  getH: function() { return 20 }
+
+})
+
+
+var VslRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(VslRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+    ObjectRenderer.prototype.renderBox.apply(this, arguments)
+    var cursorPath = d3.svg.line()([ [0, 5], [0, 10],
+      [this.getW(), 10], [this.getW(), 5], [0, 5] ])
+    g.append('svg:path')
+      .attr('d', cursorPath)
+      .attr('style', 'stroke:black;fill:black;')
+  },
+
+  getText: function() { return '' },
+  getW: function() { return 20 },
+  getH: function() { return 200 }
+
+})
+
+
+var HRadioRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(HRadioRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+    var nBoxes = this.getNBoxes(), i
+      , enabledSize = this.getBoxSize() / 1.5
+    for (i = 0; i < nBoxes; i++) {
+      g.append('rect')
+        .attr('width', this.getBoxSize())
+        .attr('height', this.getBoxSize())
+        .attr('transform', 'translate(' + i * this.getBoxSize() + ' ' + 0 + ')')
+        .attr('style', 'stroke:black;fill:white;')
+    }
+    g.append('rect')
+      .attr('width', enabledSize)
+      .attr('height', enabledSize)
+      .attr('transform', 'translate(' + (this.getBoxSize() - enabledSize) / 2
+                              + ' ' + (this.getBoxSize() - enabledSize) / 2 + ')')
+      .attr('style', 'stroke:black;fill:black;')
+  },
+
+  getW: function() { return this.getBoxSize() * this.getNBoxes() },
+  getH: function() { return this.getBoxSize() },
+  getBoxSize: function() { return 20 },
+  getNBoxes: function() { return this.node.args[3] },
+  getText: function() { return '' }
+
+})
+
+
+var VRadioRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(VRadioRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+    var nBoxes = this.getNBoxes(), i
+      , enabledSize = this.getBoxSize() / 1.5
+    for (i = 0; i < nBoxes; i++) {
+      g.append('rect')
+        .attr('width', this.getBoxSize())
+        .attr('height', this.getBoxSize())
+        .attr('transform', 'translate(' + 0 + ' ' + i * this.getBoxSize() + ')')
+        .attr('style', 'stroke:black;fill:white;')
+    }
+    g.append('rect')
+      .attr('width', enabledSize)
+      .attr('height', enabledSize)
+      .attr('transform', 'translate(' + (this.getBoxSize() - enabledSize) / 2
+                              + ' ' + (this.getBoxSize() - enabledSize) / 2 + ')')
+      .attr('style', 'stroke:black;fill:black;')
+  },
+
+  getW: function() { return this.getBoxSize() },
+  getH: function() { return this.getBoxSize() * this.getNBoxes() },
+  getBoxSize: function() { return 20 },
+  getNBoxes: function() { return this.node.args[3] },
+  getText: function() { return '' }
+
+})
+
+
+var VuRenderer = function() {
+  ObjectRenderer.prototype.constructor.apply(this, arguments)
+}
+
+_.extend(VuRenderer.prototype, ObjectRenderer.prototype, {
+
+  renderBox: function(g) {
+    g.append('rect')
+      .attr('class', 'box')
+      .attr('width', this.getW())
+      .attr('height', this.getH())
+      .attr('style', 'stroke:black;fill:grey;')
+  },
+
+  getText: function() { return '' },
+  getW: function() { return 20 },
+  getH: function() { return 200 }
 
 })
 
