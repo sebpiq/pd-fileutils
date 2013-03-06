@@ -39,6 +39,13 @@ pd-fileutils myPatch.pd > myPatch.svg
 History
 ========
 
+0.3
+----
+
+- parsing separates layout from model data
+- SVG rendering of all controls
+- basic pd rendering
+
 0.2
 ----
 

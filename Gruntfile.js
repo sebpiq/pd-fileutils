@@ -54,6 +54,7 @@ module.exports = function(grunt) {
         'Patch': fs.readFileSync('lib/Patch.js').toString(),
         'parsing': fs.readFileSync('lib/parsing.js'),
         'svgRendering': fs.readFileSync('lib/svg-rendering.js'),
+        'pdRendering': fs.readFileSync('lib/pd-rendering.js'),
         'index': fs.readFileSync('index.js')
       }
       fs.writeFileSync('dist/' + grunt.config.data.pkg.name + '-latest.js', mustache.to_html(template, context))

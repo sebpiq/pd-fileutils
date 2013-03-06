@@ -71,9 +71,9 @@ _.extend(Patch.prototype, {
 // See http://puredata.info/docs/developer/PdFileFormat for the Pd file format reference
 
 var _ = require('underscore')
-
+  , NODES = ['obj', 'floatatom', 'symbolatom', 'msg', 'text']
   // Regular expression to split tokens in a message.
-var tokensRe = / |\r\n?|\n/
+  , tokensRe = / |\r\n?|\n/
   // Regular expression to detect escaped dollar vars.
   , escapedDollarVarReGlob = /\\(\$\d+)/g
   // Regular expression for finding valid lines of Pd in a file
@@ -117,11 +117,6 @@ var parseArgs = exports.parseArgs = function(args) {
   }
 }
 
-  
-/******************** Patch parsing ************************/
-
-var NODE_ELEMS = ['obj', 'floatatom', 'symbolatom', 'msg', 'text']
-
 // Parses a Pd file, creates and returns a graph from it
 exports.parse = function(txt) {
   return recursParse(txt)[0]
@@ -131,16 +126,14 @@ var recursParse = function(txt) {
 
   var currentTable = null       // last table name to add samples to
     , idCounter = -1, nextId = function() { idCounter++; return idCounter } 
-    , patch = {nodes: [], connections: []}
+    , patch = {nodes: [], connections: [], layout: undefined, args: []}
     , line, firstLine = true
+    , nextLine = function() { txt = txt.slice(line.index + line[0].length) }
 
   // use our regular expression to match instances of valid Pd lines
   linesRe.lastIndex = 0 // reset lastIndex, in case the previous call threw an error
 
   while (line = txt.match(linesRe)) {
-    // Remove the line from the text
-    txt = txt.slice(line.index + line[0].length)
-
     var tokens = line[1].split(tokensRe)
       , chunkType = tokens[0]
 
@@ -148,11 +141,6 @@ var recursParse = function(txt) {
     if (chunkType === '#N') {
       var elementType = tokens[1]
       if (elementType === 'canvas') {
-        var guiX = tokens[2]
-          , guiY = tokens[3]
-          , guiWidth = tokens[4]
-          , guiHeight = tokens[5]
-          , name = tokens[6]
 
         // This is a subpatch
         if (!firstLine) {
@@ -165,17 +153,25 @@ var recursParse = function(txt) {
           }, attrs))
           // The remaining text is what was returned 
           txt = result[1]
+        // Else this is the first line of the patch file
+        } else {
+          patch.layout = {
+            x: parseInt(tokens[2], 10), y: parseInt(tokens[3], 10),
+            width: parseInt(tokens[4], 10), height: parseInt(tokens[5], 10),
+            openOnLoad: tokens[7]
+          }
+          patch.args = [tokens[6]]
+          nextLine()
         }
-      } else throw new Error('invalid element type for chunk #N : ' + elementType)
 
+      } else throw new Error('invalid element type for chunk #N : ' + elementType)
     //================ #X : patch elements ================// 
     } else if (chunkType === '#X') {
       var elementType = tokens[1]
 
       // ---- restore : ends a canvas definition ---- //
       if (elementType === 'restore') {
-        var guiX = parseInt(tokens[2], 10)
-          , guiY = parseInt(tokens[3], 10)
+        var layout = {x: parseInt(tokens[2], 10), y: parseInt(tokens[3], 10)}
           , canvasType = tokens[4]
           , args = []
         // add subpatch name
@@ -190,18 +186,20 @@ var recursParse = function(txt) {
         }
         
         // Return `subpatch`, `remaining text`, `attrs`
+        nextLine()
         return [patch, txt, {
           proto: canvasType,
           args: args,
-          guiData: {x: guiX, y: guiY},
+          layout: layout
         }]
 
-      // ---- NODE_ELEMS : object/control/text instantiation ---- //
-      } else if (_.contains(NODE_ELEMS, elementType)) {
+      // ---- NODES : object/control instantiation ---- //
+      // TODO: text is not a node
+      } else if (_.contains(NODES, elementType)) {
         var proto  // the object name
           , args   // the construction args for the object
-          , guiX = parseInt(tokens[2], 10)
-          , guiY = parseInt(tokens[3], 10)
+          , layout = {x: parseInt(tokens[2], 10), y: parseInt(tokens[3], 10)}
+          , result
 
         // 2 categories here :
         //  - elems whose name is `elementType`
@@ -215,11 +213,16 @@ var recursParse = function(txt) {
         }
         if (elementType === 'text') args = [tokens.slice(4).join(' ')]
 
+        // Handling controls' creation arguments
+        result = parseControls(proto, args, layout)
+        args = result[0]
+        layout = result[1]
+
         // Add the object to the graph
         patch.nodes.push({
           id: nextId(),
           proto: proto,
-          guiData: {x: guiX, y: guiY},
+          layout: layout,
           args: parseArgs(args)
         })
 
@@ -254,7 +257,8 @@ var recursParse = function(txt) {
       // ---- coords : visual range of framsets ---- //
       } else if (elementType === 'coords') { // TODO ?
       } else throw new Error('invalid element type for chunk #X : ' + elementType)
-
+      
+      nextLine()
     //================ #A : array data ================// 
     } else if (chunkType === '#A') {
       // reads in part of an array/table of data, starting at the index specified in this line
@@ -268,11 +272,103 @@ var recursParse = function(txt) {
       } else {
         console.error('got table data outside of a table.')
       }
+
+      nextLine()
     } else throw new Error('invalid chunk : ' + chunkType)
+
     firstLine = false
   }
   
   return [patch, '']
+}
+
+// This is put here just for readability of the main `parse` function
+var parseControls = function(proto, args, layout) {
+
+  if (proto === 'floatatom') {
+    // <width> <lower_limit> <upper_limit> <label_pos> <label> <receive> <send>
+    layout.width = args[0] ; layout.labelPos = args[3] ; layout.label = args[4]
+    // <lower_limit> <upper_limit> <receive> <send>
+    args = [args[1], args[2], args[5], args[6]]
+  } else if (proto === 'symbolatom') {
+    // <width> <lower_limit> <upper_limit> <label_pos> <label> <receive> <send>
+    layout.width = args[0] ; layout.labelPos = args[3] ; layout.label = args[4]
+    // <lower_limit> <upper_limit> <receive> <send>
+    args = [args[1], args[2], args[5], args[6]]
+  } else if (proto === 'bng') {
+    // <size> <hold> <interrupt> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color>
+    layout.size = args[0] ; layout.hold = args[1] ; layout.interrupt = args[2]
+    layout.label = args[6] ; layout.labelX = args[7] ; layout.labelY = args[8]
+    layout.labelFont = args[9] ; layout.labelFontSize = args[10] ; layout.bgColor = args[11]
+    layout.fgColor = args[12] ; layout.labelColor = args[13]
+    // <init> <send> <receive>
+    args = [args[3], args[4], args[5]]
+  } else if (proto === 'tgl') {
+    // <size> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <init_value> <default_value>
+    layout.size = args[0] ; layout.label = args[4] ; layout.labelX = args[5]
+    layout.labelY = args[6] ; layout.labelFont = args[7] ; layout.labelFontSize = args[8]
+    layout.bgColor = args[9] ; layout.fgColor = args[10] ; layout.labelColor = args[11]
+    // <init> <send> <receive> <init_value> <default_value>
+    args = [args[1], args[2], args[3], args[12], args[13]]
+  } else if (proto === 'nbx') {
+    // <size> <height> <min> <max> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <log_height>
+    layout.size = args[0] ; layout.height = args[1] ; layout.log = args[4]
+    layout.label = args[8] ; layout.labelX = args[9] ; layout.labelY = args[10]
+    layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
+    layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.logHeight = args[16]
+    // <min> <max> <init> <send> <receive>
+    args = [args[2], args[3], args[5], args[6], args[7]]
+  } else if (proto === 'vsl') {
+    // <width> <height> <bottom> <top> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value> <steady_on_click>
+    layout.width = args[0] ; layout.height = args[1] ; layout.log = args[4]
+    layout.label = args[8] ; layout.labelX = args[9] ; layout.labelY = args[10]
+    layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
+    layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.steadyOnClick = args[17]
+    // <bottom> <top> <init> <send> <receive> <default_value>
+    args = [args[2], args[3], args[5], args[6], args[7], args[16]]
+  } else if (proto === 'hsl') {
+    // <width> <height> <bottom> <top> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value> <steady_on_click>
+    layout.width = args[0] ; layout.height = args[1] ; layout.log = args[4]
+    layout.label = args[8] ; layout.labelX = args[9] ; layout.labelY = args[10]
+    layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
+    layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.steadyOnClick = args[17]
+    // <bottom> <top> <init> <send> <receive> <default_value>
+    args = [args[2], args[3], args[5], args[6], args[7], args[16]]
+  } else if (proto === 'vradio') {
+    // <size> <new_old> <init> <number> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value>
+    layout.size = args[0] ; layout.label = args[6] ; layout.labelX = args[7]
+    layout.labelY = args[8] ; layout.labelFont = args[9] ; layout.labelFontSize = args[10]
+    layout.bgColor = args[11] ; layout.fgColor = args[12] ; layout.labelColor = args[13]
+    // <new_old> <init> <number> <send> <receive> <default_value>
+    args = [args[1], args[2], args[3], args[4], args[5], args[14]]
+  } else if (proto === 'hradio') {
+    // <size> <new_old> <init> <number> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value>
+    layout.size = args[0] ; layout.label = args[6] ; layout.labelX = args[7]
+    layout.labelY = args[8] ; layout.labelFont = args[9] ; layout.labelFontSize = args[10]
+    layout.bgColor = args[11] ; layout.fgColor = args[12] ; layout.labelColor = args[13]
+    // <new_old> <init> <number> <send> <receive> <default_value>
+    args = [args[1], args[2], args[3], args[4], args[5], args[14]]
+  } else if (proto === 'vu') {
+    // <width> <height> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <label_color> <scale> <?>
+    layout.width = args[0] ; layout.height = args[1] ; layout.label = args[3]
+    layout.labelX = args[4] ; layout.labelY = args[5] ; layout.labelFont = args[6]
+    layout.labelFontSize = args[7] ; layout.bgColor = args[8] ; layout.labelColor = args[9]
+    layout.log = args[10]
+    // <receive> <?>
+    args = [args[2], args[11]]
+  } else if (proto === 'cnv') {
+    // <size> <width> <height> <send> <receive> <label> <x_off> <y_off> <font> <font_size> <bg_color> <label_color> <?>
+    layout.size = args[0] ; layout.width = args[1] ; layout.height = args[2]
+    layout.label = args[5] ; layout.labelX = args[6] ; layout.labelY = args[7]
+    layout.labelFont = args[8] ; layout.labelFontSize = args[9] ; layout.bgColor = args[10]
+    layout.labelColor = args[11]
+    // <send> <receive> <?>
+    args = [args[3], args[4], args[12]]
+  }
+  // Other objects (including msg) all args belong to the graph model
+
+  return [args, layout]
+
 }
 
 })(modules.parsing = {}, exports.parsing = {}, require)
@@ -384,10 +480,10 @@ var NodeRenderer = function(node) {
 _.extend(NodeRenderer.prototype, {
 
   // Returns node X in the canvas
-  getX: function() { return this.node.guiData.x * opts.ratio },
+  getX: function() { return this.node.layout.x * opts.ratio },
 
   // Returns node Y in the canvas
-  getY: function() { return this.node.guiData.y * opts.ratio },
+  getY: function() { return this.node.layout.y * opts.ratio },
 
   // Returns outlet's absolute X in the canvas
   getOutletX: function(outlet) {
@@ -840,6 +936,50 @@ _.extend(TextRenderer.prototype, NodeRenderer.prototype, {
 })
 
 })(modules['svg-rendering'] = {}, exports['svg-rendering'] = {}, require)
+
+;(function(module, exports, require){
+  var mustache = require('mustache')
+  , _ = require('underscore')
+
+exports.render = function(patch) {
+
+  // Render the graph canvas
+  var rendered = ''
+    , layout = _.clone(patch.layout || {})
+  _.defaults(layout, {x: 0, y: 0, width: 500, height: 500})
+  rendered += mustache.render(canvasTpl, {args: patch.args, layout: layout}) + ';\n'
+
+  // Render all nodes
+  _.forEach(patch.nodes, function(node) {
+    var layout = _.clone(node.layout || {})
+    _.defaults(layout, {x: 0, y: 0})
+    rendered += mustache.render(objTpl, {args: node.args, layout: layout, proto: node.proto}) + ';\n'
+  })
+
+  // Render all connections
+  _.forEach(patch.connections, function(conn) {
+    rendered += mustache.render(connectTpl, conn) + ';\n'
+  })
+
+  return rendered
+}
+
+var canvasTpl = '#N canvas {{{layout.x}}} {{{layout.y}}} {{{layout.width}}} {{{layout.height}}} {{{args.0}}}{{#layout.openOnLoad}} {{{.}}}{{/layout.openOnLoad}}'
+  , connectTpl = '#X connect {{{source.id}}} {{{source.port}}} {{{sink.id}}} {{{sink.port}}}'
+
+var floatAtomTpl = '#X floatatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}} {{{args.0}}} {{{args.1}}} {{{layout.labelPos}}} {{{layout.label}}} {{{args.2}}} {{{args.3}}}'
+  , symbolAtomTpl = '#X symbolatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}} {{{args.0}}} {{{args.1}}} {{{layout.labelPos}}} {{{layout.label}}} {{{args.2}}} {{{args.3}}}'
+  , bngTpl = '#X obj {{{layout.x}}} {{{layout.y}}} bng {{{layout.size}}} {{{layout.hold}}} {{{layout.interrupt}}} {{{args.0}}} {{{args.1}}} {{{args.2}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}}'
+  , nbxTpl = '#X obj {{{layout.x}}} {{{layout.y}}} nbx {{{layout.size}}} {{{layout.height}}} {{{args.0}}} {{{args.1}}} {{{layout.log}}} {{{args.2}}} {{{args.3}}} {{{args.4}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}} {{{layout.logHeight}}}'
+  , vslTpl = '#X obj {{{layout.x}}} {{{layout.y}}} vsl {{{layout.width}}} {{{layout.height}}} {{{args.0}}} {{{args.1}}} {{{layout.log}}} {{{args.2}}} {{{args.3}}} {{{args.4}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}} {{{args.5}}} {{{layout.steadyOnClick}}}'
+  , hslTpl = '#X obj {{{layout.x}}} {{{layout.y}}} hsl {{{layout.width}}} {{{layout.height}}} {{{args.0}}} {{{args.1}}} {{{layout.log}}} {{{args.2}}} {{{args.3}}} {{{args.4}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}} {{{args.5}}} {{{layout.steadyOnClick}}}'
+  , vradioTpl = '#X obj {{{layout.x}}} {{{layout.y}}} vradio {{{layout.size}}} {{{args.0}}} {{{args.1}}} {{{args.2}}} {{{args.3}}} {{{args.4}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}} {{{args.5}}}'
+  , hradioTpl = '#X obj {{{layout.x}}} {{{layout.y}}} hradio {{{layout.size}}} {{{args.0}}} {{{args.1}}} {{{args.2}}} {{{args.3}}} {{{args.4}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.fgColor}}} {{{layout.labelColor}}} {{{args.5}}}'
+  , vuTpl = '#X obj {{{layout.x}}} {{{layout.y}}} vu {{{layout.width}}} {{{layout.height}}} {{{args.0}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.labelColor}}} {{{layout.log}}} {{{args.1}}}'
+  , cnvTpl = '#X obj {{{layout.x}}} {{{layout.y}}} cnv {{{layout.size}}} {{{layout.width}}} {{{layout.height}}} {{{args.0}}} {{{args.1}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.labelColor}}} {{{args.2}}}'
+  , objTpl = '#X obj {{{layout.x}}} {{{layout.y}}} {{{proto}}}{{#args}} {{.}}{{/args}}'
+
+})(modules['pd-rendering'] = {}, exports['pd-rendering'] = {}, require)
 
 ;(function(exports){
   exports.parse = require('./lib/parsing').parse
