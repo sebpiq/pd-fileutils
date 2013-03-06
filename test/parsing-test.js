@@ -113,7 +113,8 @@ describe('parsing', function() {
         ],
         connections: [
           { source: {id: 0, port: 0}, sink: {id: 1, port: 0} }
-        ]
+        ],
+        layout: {x: 778, y: 17, width: 450, height: 300}
       })
     })
 
@@ -197,7 +198,8 @@ describe('parsing', function() {
           {id: 0, proto: 'graph', args: [], layout: {x: 157, y: 26}, subpatch: null},
           {id: 1, proto: 'osc~', args: [440], layout: {x: 19, y: 370}},
         ],
-        connections: []
+        connections: [],
+        layout: {x: 667, y: 72, width: 551, height: 408}
       })
 
       assert.deepEqual(array, {
@@ -210,7 +212,8 @@ describe('parsing', function() {
               2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 0, 0, 0, 0, 0]
           }
         ],
-        connections: []
+        connections: [],
+        layout: {x: 0, y: 0, width: 450, height: 300}
       })
     })
 
@@ -233,7 +236,8 @@ describe('parsing', function() {
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
           {source: {id: 1, port: 0}, sink: {id: 2, port: 0}},
           {source: {id: 1, port: 0}, sink: {id: 2, port: 1}}
-        ]
+        ],
+        layout: {x: 340, y: 223, width: 450, height: 300}
       })
 
       assert.deepEqual(subpatch1, {
@@ -247,7 +251,8 @@ describe('parsing', function() {
         connections: [
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
           {source: {id: 2, port: 0}, sink: {id: 3, port: 0}}
-        ]
+        ],
+        layout: {x: 447, y: 260, width: 450, height: 300}
       })
 
       assert.deepEqual(subpatch2, {
@@ -257,7 +262,8 @@ describe('parsing', function() {
         ],
         connections: [
           {source: {id: 1, port: 0}, sink: {id: 0, port: 0}}
-        ]
+        ],
+        layout: {x: 842, y: 260, width: 450, height: 300}
       })
 
     })
