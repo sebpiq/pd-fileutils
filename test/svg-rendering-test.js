@@ -11,8 +11,8 @@ describe('svg-rendering', function() {
     it('should succeed rendering a patch', function() {
       var rendered = svg.render({
         nodes: [
-          {id: 0, proto: 'loadbang', args: [], guiData: {x: 14, y: 13}},
-          {id: 1, proto: 'print', args: ['bla'], guiData: {x: 14, y: 34}},
+          {id: 0, proto: 'loadbang', args: [], layout: {x: 14, y: 13}},
+          {id: 1, proto: 'print', args: ['bla'], layout: {x: 14, y: 34}},
         ],
         connections: [
           { source: {id: 0, port: 0}, sink: {id: 1, port: 0} }

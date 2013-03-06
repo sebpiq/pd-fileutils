@@ -108,8 +108,8 @@ describe('parsing', function() {
 
       assert.deepEqual(patch, {
         nodes: [
-          {id: 0, proto: 'loadbang', args: [], guiData: {x: 14, y: 13}},
-          {id: 1, proto: 'print', args: ['bla'], guiData: {x: 14, y: 34}},
+          {id: 0, proto: 'loadbang', args: [], layout: {x: 14, y: 13}},
+          {id: 1, proto: 'print', args: ['bla'], layout: {x: 14, y: 34}},
         ],
         connections: [
           { source: {id: 0, port: 0}, sink: {id: 1, port: 0} }
@@ -121,54 +121,58 @@ describe('parsing', function() {
       var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'node-elems.pd')).toString()
         , patch = parsing.parse(patchStr)
 
-      assert.deepEqual(patch.nodes[0], 
-        {id: 0, proto: 'floatatom', args: [5, 0, 0, 0, '-', '-', '-'], guiData: {x: 73, y: 84}})
+      assert.deepEqual(patch.nodes[0],
+        {id: 0, proto: 'floatatom', args: [0, 0, '-', '-'], layout: {
+          x: 73, y: 84, width: 5, labelPos: 0, label: '-'}})
 
       assert.deepEqual(patch.nodes[1], 
-        {id: 1, proto: 'msg', args: [89], guiData: {x: 73, y: 43}})
+        {id: 1, proto: 'msg', args: [89], layout: {x: 73, y: 43}})
 
       assert.deepEqual(patch.nodes[2], 
-        {id: 2, proto: 'bng', args: [15, 250, 50, 0, 'empty', 'empty', 'empty',
-          17, 7, 0, 10, -262144, -1, -1], guiData: {x: 142, y: 42}})
+        {id: 2, proto: 'bng', args: [0, 'empty', 'empty'], layout: {
+          size: 15, x: 142, y: 42, label: 'empty', labelX: 17, labelY: 7, labelFont: 0, labelFontSize: 10,
+          bgColor: -262144, fgColor: -1, labelColor: -1, hold: 250, interrupt: 50}})
 
       assert.deepEqual(patch.nodes[3], 
-        {id: 3, proto: 'tgl', args: [15, 0, 'empty', 'empty', 'empty',
-          17, 7, 0, 10, -262144, -1, -1, 0, 10], guiData: {x: 144, y: 85}})
+        {id: 3, proto: 'tgl', args: [0, 'empty', 'empty', 0, 10], layout: {x: 144, y: 85, size: 15, label: 'empty',
+          labelX: 17, labelY: 7, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1, labelColor: -1}})
 
       assert.deepEqual(patch.nodes[4], 
-        {id: 4, proto: 'nbx', args: [5, 14, -1e+37, 1e+37, 0, 0, 'empty', 'empty', 'empty',
-          0, -8, 0, 10, -262144, -1, -1, 0, 256], guiData: {x: 180, y: 42}})
+        {id: 4, proto: 'nbx', args: [-1e+37, 1e+37, 0, 'empty', 'empty'], layout: {x: 180, y: 42, size: 5, height: 14,
+          log: 0, label: 'empty', labelX: 0, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
+          labelColor: -1, logHeight: 0}})
 
       assert.deepEqual(patch.nodes[5], 
-        {id: 5, proto: 'hsl', args: [128, 15, 0, 127, 0, 0, 'empty', 'empty', 'empty',
-          -2, -8, 0, 10, -262144, -1, -1, 0, 1], guiData: {x: 242, y: 86}})
+        {id: 5, proto: 'hsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 242, y: 86, width: 128, height: 15, log: 0,
+          label: 'empty', labelX: -2, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
+          labelColor: -1, steadyOnClick: 1}})
 
-      assert.deepEqual(patch.nodes[6], 
-        {id: 6, proto: 'vradio', args: [15, 1, 0, 8, 'empty', 'empty', 'empty',
-          0, -8, 0, 10, -262144, -1, -1, 0], guiData: {x: 249, y: 137}})
+      assert.deepEqual(patch.nodes[6],
+        {id: 6, proto: 'vradio', args: [1, 0, 8, 'empty', 'empty', 0], layout: {x: 249, y: 137, size: 15, label: 'empty',
+          labelX: 0, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1, labelColor: -1}})
 
-      assert.deepEqual(patch.nodes[7], 
-        {id: 7, proto: 'vu', args: [15, 120, 'empty', 'empty',
-          -1, -8, 0, 10, -66577, -1, 1, 0], guiData: {x: 89, y: 141}})
+      assert.deepEqual(patch.nodes[7],
+        {id: 7, proto: 'vu', args: ['empty', 0], layout: {x: 89, y: 141, width: 15, height: 120, label: 'empty',
+          labelX: -1, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -66577, labelColor: -1, log: 1}})
 
-      assert.deepEqual(patch.nodes[8], 
-        {id: 8, proto: 'cnv', args: [15, 100, 60, 'empty', 'empty', 'empty',
-          20, 12, 0, 14, -233017, -66577, 0], guiData: {x: 317, y: 154}})
+      assert.deepEqual(patch.nodes[8],
+        {id: 8, proto: 'cnv', args: ['empty', 'empty', 0], layout: {x: 317, y: 154, size: 15, width: 100, height: 60,
+          label: 'empty', labelX: 20, labelY: 12, labelFont: 0, labelFontSize: 14, bgColor: -233017, labelColor: -66577}})
 
       assert.deepEqual(patch.nodes[9], 
-        {id: 9, proto: 'symbolatom', args: [10, 0, 0, 0, '-', '-', '-'], guiData: {x: 255, y: 38}})
+        {id: 9, proto: 'symbolatom', args: [0, 0, '-', '-'], layout: {x: 255, y: 38, width: 10, labelPos: 0, label: '-'}})
 
       assert.deepEqual(patch.nodes[10],
-        {id: 10, proto: 'text', args: ['bla bla bla bla'], guiData: {x: 158, y: 309}})
-
+        {id: 10, proto: 'text', args: ['bla bla bla bla'], layout: {x: 158, y: 309}})
+      
       assert.deepEqual(patch.nodes[11],
-        {id: 11, proto: 'vsl', args: [15, 128, 0, 127, 0, 0, 'empty', 'empty', 'empty',
-          0, -9, 0, 10, -262144, -1, -1, 0, 1], guiData: {x: 458, y: 62}})
+        {id: 11, proto: 'vsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 458, y: 62, width: 15, height: 128, log: 0, 
+          label: 'empty', labelX: 0, labelY: -9, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
+          labelColor: -1, steadyOnClick: 1}})
 
       assert.deepEqual(patch.nodes[12],
-        {id: 12, proto: 'hradio', args: [15, 1, 0, 8, 'empty', 'empty', 'empty',
-          0, -8, 0, 10, -262144, -1, -1, 0], guiData: {x: 421, y: 258}})
-      
+        {id: 12, proto: 'hradio', args: [1, 0, 8, 'empty', 'empty', 0], layout: {x: 421, y: 258, size: 15, label: 'empty',
+          labelX: 0, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1, labelColor: -1}})
 
       assert.deepEqual(patch.connections, [
         { source: {id: 1, port: 0}, sink: {id: 0, port: 0} },
@@ -190,8 +194,8 @@ describe('parsing', function() {
 
       assert.deepEqual(patch, {
         nodes: [
-          {id: 0, proto: 'graph', args: [], guiData: {x: 157, y: 26}, subpatch: null},
-          {id: 1, proto: 'osc~', args: [440], guiData: {x: 19, y: 370}},
+          {id: 0, proto: 'graph', args: [], layout: {x: 157, y: 26}, subpatch: null},
+          {id: 1, proto: 'osc~', args: [440], layout: {x: 19, y: 370}},
         ],
         connections: []
       })
@@ -221,9 +225,9 @@ describe('parsing', function() {
 
       assert.deepEqual(patch, {
         nodes: [
-          {id: 0, proto: 'osc~', args: [], guiData: {x: 78, y: 81}},
-          {id: 1, proto: 'pd', args: ['subPatch'], guiData: {x: 79, y: 117}, subpatch: null},
-          {id: 2, proto: 'dac~', args: [], guiData: {x: 80, y: 175}}
+          {id: 0, proto: 'osc~', args: [], layout: {x: 78, y: 81}},
+          {id: 1, proto: 'pd', args: ['subPatch'], layout: {x: 79, y: 117}, subpatch: null},
+          {id: 2, proto: 'dac~', args: [], layout: {x: 80, y: 175}}
         ],
         connections: [
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
@@ -234,11 +238,11 @@ describe('parsing', function() {
 
       assert.deepEqual(subpatch1, {
         nodes: [
-          {id: 0, proto: 'inlet~', args: [], guiData: {x: 46, y: 39}},
-          {id: 1, proto: 'delwrite~', args: ['myDel'], guiData: {x: 47, y: 83}},
-          {id: 2, proto: 'delread~', args: ['myDel'], guiData: {x: 47, y: 126}},
-          {id: 3, proto: 'outlet~', args: [], guiData: {x: 48, y: 165}},
-          {id: 4, proto: 'pd', args: ['subSubPatch'], guiData: {x: 183, y: 83}, subpatch: null},
+          {id: 0, proto: 'inlet~', args: [], layout: {x: 46, y: 39}},
+          {id: 1, proto: 'delwrite~', args: ['myDel'], layout: {x: 47, y: 83}},
+          {id: 2, proto: 'delread~', args: ['myDel'], layout: {x: 47, y: 126}},
+          {id: 3, proto: 'outlet~', args: [], layout: {x: 48, y: 165}},
+          {id: 4, proto: 'pd', args: ['subSubPatch'], layout: {x: 183, y: 83}, subpatch: null},
         ],
         connections: [
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
@@ -248,8 +252,8 @@ describe('parsing', function() {
 
       assert.deepEqual(subpatch2, {
         nodes: [
-          {id: 0, proto: 'outlet~', args: [], guiData: {x: 67, y: 67}},
-          {id: 1, proto: 'phasor~', args: [-440], guiData: {x: 66, y: 32}}
+          {id: 0, proto: 'outlet~', args: [], layout: {x: 67, y: 67}},
+          {id: 1, proto: 'phasor~', args: [-440], layout: {x: 66, y: 32}}
         ],
         connections: [
           {source: {id: 1, port: 0}, sink: {id: 0, port: 0}}
