@@ -464,6 +464,7 @@ exports.render = function(patch) {
   var rendered = d3.select('body')[0][0].innerHTML
   rendered = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" '
     +'"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">' + rendered
+  d3.select('svg').remove()
   return rendered
 
 }
@@ -984,6 +985,7 @@ var floatAtomTpl = '#X floatatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}
 ;(function(exports){
   exports.parse = require('./lib/parsing').parse
 exports.renderSvg = require('./lib/svg-rendering').render
+exports.renderPd = require('./lib/pd-rendering').render
 
 })(pdfu)
 

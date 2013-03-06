@@ -105,7 +105,7 @@ describe('parsing', function() {
         , patch = parsing.parse(patchStr)
         , loadbang = patch.nodes[0]
         , print = patch.nodes[1]
-
+    
       assert.deepEqual(patch, {
         nodes: [
           {id: 0, proto: 'loadbang', args: [], layout: {x: 14, y: 13}},
@@ -114,7 +114,8 @@ describe('parsing', function() {
         connections: [
           { source: {id: 0, port: 0}, sink: {id: 1, port: 0} }
         ],
-        layout: {x: 778, y: 17, width: 450, height: 300}
+        layout: {x: 778, y: 17, width: 450, height: 300, openOnLoad: undefined},
+        args: [10]
       })
     })
 
@@ -199,7 +200,8 @@ describe('parsing', function() {
           {id: 1, proto: 'osc~', args: [440], layout: {x: 19, y: 370}},
         ],
         connections: [],
-        layout: {x: 667, y: 72, width: 551, height: 408}
+        layout: {x: 667, y: 72, width: 551, height: 408, openOnLoad: undefined},
+        args: [10]
       })
 
       assert.deepEqual(array, {
@@ -213,7 +215,8 @@ describe('parsing', function() {
           }
         ],
         connections: [],
-        layout: {x: 0, y: 0, width: 450, height: 300}
+        layout: {x: 0, y: 0, width: 450, height: 300, openOnLoad: 0},
+        args: ['(subpatch)']
       })
     })
 
@@ -237,7 +240,8 @@ describe('parsing', function() {
           {source: {id: 1, port: 0}, sink: {id: 2, port: 0}},
           {source: {id: 1, port: 0}, sink: {id: 2, port: 1}}
         ],
-        layout: {x: 340, y: 223, width: 450, height: 300}
+        layout: {x: 340, y: 223, width: 450, height: 300, openOnLoad: undefined},
+        args: [10]
       })
 
       assert.deepEqual(subpatch1, {
@@ -252,7 +256,8 @@ describe('parsing', function() {
           {source: {id: 0, port: 0}, sink: {id: 1, port: 0}},
           {source: {id: 2, port: 0}, sink: {id: 3, port: 0}}
         ],
-        layout: {x: 447, y: 260, width: 450, height: 300}
+        layout: {x: 447, y: 260, width: 450, height: 300, openOnLoad: 1},
+        args: ['mySubpatch']
       })
 
       assert.deepEqual(subpatch2, {
@@ -263,7 +268,8 @@ describe('parsing', function() {
         connections: [
           {source: {id: 1, port: 0}, sink: {id: 0, port: 0}}
         ],
-        layout: {x: 842, y: 260, width: 450, height: 300}
+        layout: {x: 842, y: 260, width: 450, height: 300, openOnLoad: 1},
+        args: ['subSubPatch']
       })
 
     })
