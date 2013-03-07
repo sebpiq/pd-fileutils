@@ -7,13 +7,17 @@
   <script src="http://underscorejs.org/underscore-min.js"></script>
   <script src="http://d3js.org/d3.v3.min.js"></script>
   <script src="https://raw.github.com/sebpiq/pd-fileutils/master/dist/pd-fileutils-latest.js"></script>
+  <link href="css/code-highlight.css" rel="stylesheet" />
 
 </head>
 
 <body>
 
+  <div id="svg">
+  </div>
+
   <div id="json">
-    <pre><code></code></pre>
+    <pre><code data-language="javascript"></code></pre>
   </div>
 
   <div id="pd">
@@ -29,15 +33,9 @@
         var files = resp.data.files
           , content = files[Object.keys(files)[0]].content
           , patch = pdfu.parse(content)
-          , patchSvg = pdfu.renderSvg(patch)
-          , renderInterval = setInterval(function() {
-            if ($('svg')) {
-              $('svg').detach().prependTo('body')
-              clearInterval(renderInterval)
-              $('#loading').hide()
-            }
-          })
-        $('#json code').html(JSON.stringify(patch))
+          , patchSvg = pdfu.renderSvg(patch, {svgFile: false})
+        $('#svg').html(patchSvg)
+        $('#json code').html(JSON.stringify(patch, null, 4))
         $('#pd code').html(content)
       }
 
@@ -46,11 +44,14 @@
         + searchResult[1] + '?callback=gistLoaded'
       $('<script>', {src: gistUrl}).appendTo('body')
     }
+    gistLoaded()
 
   </script>
 
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/rainbow.min.js"></script>
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/generic.js"></script>
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/javascript.js"></script>
   <script type="text/javascript">
-
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-17637518-3']);
     _gaq.push(['_trackPageview']);
@@ -62,7 +63,6 @@
     })();
 
   </script>
-
 </body>
 
 </html>
