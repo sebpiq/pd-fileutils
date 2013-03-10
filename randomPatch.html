@@ -8,6 +8,7 @@
   <script src="http://underscorejs.org/underscore-min.js"></script>
   <script src="https://raw.github.com/janl/mustache.js/master/mustache.js"></script>
   <script>var mustache = Mustache</script>
+  <script src="http://funktion.fm/webpd/dist/webpd-latest.js"></script>
   <!--<script src="https://raw.github.com/sebpiq/pd-fileutils/master/dist/pd-fileutils-latest.js"></script>-->
   <script src="../pdfu/dist/pd-fileutils-latest.js"></script>
   <link href="css/code-highlight.css" rel="stylesheet" />
@@ -31,24 +32,25 @@
 
   <script>
     var width = $(document).width(), height = $(document).height()
-      , init = function() {
-        depth = 0
-        patch = new pdfu.Patch({nodes: [], connections: []})
-      }, depth, patch
+      , patch
+      // Function to generate the args of sound oscillators
       , genOscArgs = function() { return [getRandomInt(1, 10) / 5 * 440] }
-      , modOscArgs = function() { return [0.001 + Math.random() * 20] }
+      // Function to generate the args of modulators
+      , modOscArgs = function() { return [Math.round(Math.random() * 10 * 10) / 10] }
       , emptyArgs = function() { return [] }
       , genList = [ ['osc~', 0.5, genOscArgs], ['phasor~', 0.2, genOscArgs], ['noise~', 0.1, emptyArgs], ['*~', 0.6, emptyArgs], ['+~', 0.5, emptyArgs] ]
       , modList = [ ['osc~', 0.1, modOscArgs], ['phasor~', 0.1, modOscArgs], ['*~', 0.1, emptyArgs]]
 
 
+    // Generates a random Pd graph that makes sound
     var randomSoundGen = function() {
       return randomTree(genList, 5, function(node) {
         // Each time a node is created, we pick randomly whether we modulate it or not.
-        if (Math.random() > 0.2) {
-          var mod = randomTree(modList, 2)
+        if (Math.random() > 0.4) {          
+          var mod = null
+          while(mod === null) mod = randomTree(modList, 3)
           // Freq modulation if `node` is an oscillator
-          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() > 0.4) {
+          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() > 0.2) {
             patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: node.id, port: 0}})
             return node
           // Amplitude modulation otherwise
@@ -63,12 +65,14 @@
       })
     }
 
-    var randomTree = function(objList, maxDepth, nodeCb) {
-      depth++
+    // Generic function for generating a random tree of Pd objects. 
+    var randomTree = function(objList, maxDepth, nodeCb, curDepth) {
+      curDepth = (curDepth === undefined) ? -1 : curDepth
+      curDepth++
 
       // If max depth is reached, we return null, the parent will take care of picking a leaf
-      if (depth >= maxDepth) {
-        depth--
+      if (curDepth >= maxDepth) {
+        curDepth--
         return null
       }
 
@@ -97,12 +101,13 @@
       // If it is a dsp arithmetic, we call the function recursively
       // to get 2 subtrees that we'll connect together.
       if (isArithm(node)) {
-        var subtree1 = randomTree(objList, maxDepth)
-          , subtree2 = randomTree(objList, maxDepth)
+        var subtree1 = randomTree(objList, maxDepth, nodeCb, curDepth)
+          , subtree2 = randomTree(objList, maxDepth, nodeCb, curDepth)
 
         // If both subtrees are null, we simply discard the node
         if (subtree1 === null && subtree2 === null) {
-          node = null
+          curDepth--
+          return null
         } else {
           patch.addNode(node)
           if (subtree1 === null) subtree1 = getLeaf(node)
@@ -112,21 +117,23 @@
         }
       } else patch.addNode(node)
 
-      depth--
-      //if (nodeCb) node = nodeCb(node)
+      curDepth--
+      if (nodeCb) node = nodeCb(node)
       return node
     }
 
+    // Function for generating our random patch, and updating the page
     function getRandomPatch() {
-      init()
-      var node = randomSoundGen()
+      patch = new pdfu.Patch({nodes: [], connections: []})
+
+      var root = randomSoundGen()
         , dac = {proto: 'dac~', args: []}
         , treeLayout = d3.layout.tree()
 
       // Connect the root of the tree with [dac~]
       patch.addNode(dac)
-      patch.connections.push({source: {id: node.id, port: 0}, sink: {id: dac.id, port: 0}})
-      patch.connections.push({source: {id: node.id, port: 0}, sink: {id: dac.id, port: 1}})
+      patch.connections.push({source: {id: root.id, port: 0}, sink: {id: dac.id, port: 0}})
+      patch.connections.push({source: {id: root.id, port: 0}, sink: {id: dac.id, port: 1}})
 
       // Create the tree layout
       treeLayout.children(function(node) {
@@ -149,13 +156,17 @@
     }
     $('#getRandomPatch').click(getRandomPatch)
 
+    // Returns a random integer between `min` and `max`
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    // Returns true if the node is a dsp arithmetic operation
     function isArithm(node) {
       return _.contains(['+~', '-~', '*~', '/~'], node.proto)
     }
+
+    getRandomPatch()
     
   </script>
 
