@@ -1,34 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Title of the document</title>
+  <title>Random drone</title>
+  <meta charset="utf-8">
 
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="http://underscorejs.org/underscore-min.js"></script>
-  <script src="https://raw.github.com/janl/mustache.js/master/mustache.js"></script>
+  <script src="js/jquery.min.js"></script>
+  <script src="js/d3.v3.min.js"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/mustache.js"></script>
   <script>var mustache = Mustache</script>
+  <script src="js/jquery.knob.js"></script>
   <script src="http://funktion.fm/webpd/dist/webpd-latest.js"></script>
   <!--<script src="https://raw.github.com/sebpiq/pd-fileutils/master/dist/pd-fileutils-latest.js"></script>-->
   <script src="../pdfu/dist/pd-fileutils-latest.js"></script>
-  <link href="css/code-highlight.css" rel="stylesheet" />
+  <link href="css/reset.css" rel="stylesheet" />
+  <link href='http://fonts.googleapis.com/css?family=Paytone+One' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Tauri' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet/less" type="text/css" href="css/randomDrone.less" />
+  <script src="js/less-1.3.3.min.js" type="text/javascript"></script>
+
 
 </head>
 
 <body>
 
-  <button id="getRandomPatch">Generate another patch</button>
-  <button id="playPatch">Play</button>
+  <div id="svg"></div>
 
-  <div id="svg">
+  <div id="nav">
+    <ul>
+      <li>Download patch</li>
+      <li>Configure</li>
+      <li>About</li>
+    </ul>
+
+    <div id="controls">
+      <button id="getRandomPatch"><span>Gimme another</span></button>
+      <button id="startSound"><span>Play</span></button>
+      <button id="stopSound"><span>Stop</span></button>
+    </div>
   </div>
 
-  <div id="json">
-    <pre><code data-language="javascript"></code></pre>
-  </div>
+  <div id="tabs">
 
-  <div id="pd">
-    <pre><code></code></pre>
+    <div id="pd" class="tab">
+      <button id="copyPd">Copy to clipboard</button>
+      <textarea></textarea>
+      <pre><code></code></pre>
+    </div>
+
+    <div id="configuration" class="tab">
+      <input id="genOscAmount" type="text" value="50" class="dial genParam">
+      <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
+      <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
+      <input id="genMultAmount" type="text" value="60" class="dial genParam">
+      <input id="genAddAmount" type="text" value="50" class="dial genParam">
+
+      <input id="ampModAmount" type="text" value="" class="dial modParam">
+      <input id="fmModAmount" type="text" value="" class="dial modParam">
+    </div>
+
+    <div id="about" class="tab">
+      <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
+      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries, made by <a href="mailto:sebpiq@gmail.com">Sébastien Piquemal</a>. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> alloes to load the patch and play it in the browser without plugin.
+      </p>
+    </div>
+
   </div>
 
   <script>
@@ -39,10 +75,53 @@
       // Function to generate the args of modulators
       , modOscArgs = function() { return [Math.round(Math.random() * 10 * 10) / 10] }
       , emptyArgs = function() { return [] }
-      , genList = [ ['osc~', 0.5, genOscArgs], ['phasor~', 0.2, genOscArgs], ['noise~', 0.1, emptyArgs], ['*~', 0.6, emptyArgs], ['+~', 0.5, emptyArgs] ]
-      , modList = [ ['osc~', 0.1, modOscArgs], ['*~', 0.1, emptyArgs]]
+      , genList = [ ['osc~', 50, genOscArgs], ['phasor~', 20, genOscArgs], ['noise~', 10, emptyArgs], ['*~', 60, emptyArgs], ['+~', 50, emptyArgs] ]
+      , modList = [ ['osc~', 10, modOscArgs], ['*~', 10, emptyArgs]]
 
+    // =============== UI =============== //
+    // Plays the current patch using webpd
+    var startSound = function() {
+      webpdPatch.play()
+      $('#stopSound').show()
+      $('#startSound').hide()
+    }
+    $('#startSound').click(startSound)
 
+    // Stops playing the patch
+    var stopSound = function() {
+      webpdPatch.stop()
+      $('#startSound').show()
+      $('#stopSound').hide()
+    }
+    $('#stopSound').click(stopSound)
+
+    // Generator configuration
+    $('.dial').knob()
+    $('.genParam').each(function(i, el) {
+      $(this).trigger('configure', {
+        release: function(val) { genList[i][1] = val; console.log(i, val) },
+        min: 0, max: 100
+      })
+    })
+
+    $('#copyPd').click(function() {
+      
+    })
+
+    // Setup tabs
+    $('#nav li').each(function(i, li) {
+      $(li).click(function() {
+        $('#tabs .tab').removeClass('active')
+        $('#tabs .tab').slice(i, i+1).addClass('active')
+      })
+    })
+    $('#tabs .tab').each(function(i, tab) {
+      $('<a>', {'class': 'closeTab'}).html('X').appendTo(tab).click(function() {
+        $(tab).removeClass('active')
+      })
+    })
+
+    // =============== Patch generation =============== //
     // Generates a random Pd graph that makes sound
     var randomSoundGen = function() {
       return randomTree(genList, 5, function(node) {
@@ -132,7 +211,7 @@
 
     // Function for generating our random patch, and updating the page
     var getRandomPatch = function() {
-      if (webpdPatch) webpdPatch.stop()
+      if (webpdPatch) stopSound()
       patch = new pdfu.Patch({nodes: [], connections: []})
 
       var root = randomSoundGen()
@@ -153,25 +232,19 @@
       _.each(patch.nodes, function(node) {
         node.layout = {}
         node.layout.x = Math.round(node.x * width / 2)
-        node.layout.y = Math.round(height / 2 - node.y * height / 4)
+        node.layout.y = Math.round(height / 2 - node.y * height / 3)
         delete node.parent ; delete node.children 
       })
 
       // Rendering and updating the page
       patchSvg = pdfu.renderSvg(patch, {svgFile: false})
       patchPd = pdfu.renderPd(patch)
+      webpdPatch = Pd.compat.parse(patchPd)
       $('#svg').html(patchSvg)
-      $('#json code').html(JSON.stringify(patch, null, 4))
       $('#pd code').html(patchPd)
+      $('#pd textarea').val(patchPd)
     }
     $('#getRandomPatch').click(getRandomPatch)
-
-    // Plays the current patch using webpd
-    var playPatch = function() {
-      webpdPatch = Pd.compat.parse(patchPd)
-      webpdPatch.play()
-    }
-    $('#playPatch').click(playPatch)
 
     // Returns a random integer between `min` and `max`
     var getRandomInt = function(min, max) {
@@ -182,14 +255,10 @@
     var isArithm = function(node) {
       return _.contains(['+~', '-~', '*~', '/~'], node.proto)
     }
-
-    getRandomPatch()
     
+    getRandomPatch()
   </script>
 
-  <script src="https://raw.github.com/ccampbell/rainbow/master/js/rainbow.min.js"></script>
-  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/generic.js"></script>
-  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/javascript.js"></script>
   <script type="text/javascript">
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', 'UA-17637518-3']);

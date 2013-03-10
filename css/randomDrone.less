@@ -1,0 +1,125 @@
+/* http://colorschemedesigner.com/#3H51Ew0w0w0w0 */
+
+body {
+  font-size: 20px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+p {
+  margin-bottom: 1em;
+  line-height: 1.4em;
+}
+
+#tabs {
+
+  font-family: 'Tauri', sans-serif;
+
+  .tab {
+    padding: 5%;
+    font-size: 110%;
+    color: lighten(#6A92D4, 50%);
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90%;
+    height: 90%;
+    background-color: rgba(0, 0, 0, 0.9);
+    &.active {display: block;}    
+
+    a, a:visited, a:hover {
+      text-decoration: none;
+      color: #6A92D4;
+    }
+
+    a.closeTab {
+      font-family: 'Paytone One', sans-serif;
+      position: absolute;
+      top: 1%;
+      right: 1%;
+      cursor: pointer;
+      font-size: 140%;
+    }
+  }
+
+  #pd {
+    pre {
+      font-family: monospace;
+      height: 50%;
+      overflow: auto;
+      border: 1px solid;
+      padding: 1em;
+    }
+  }
+}
+
+#nav {
+  font-family: 'Paytone One', sans-serif;
+  height: 100%;
+  min-width: 35%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-right: 1em;
+  padding-top: 1em;
+  font-size: 220%;
+
+  li {
+    cursor: pointer;
+    text-align: right;
+    color: #052C6E;
+    margin-bottom: 1em;
+    padding-right: 0.5em;
+    text-transform: uppercase;
+  }
+
+}
+
+#controls {
+  position: absolute;
+  right: 1em;
+  bottom: 2.5em;
+
+  button {
+    font-family: 'Paytone One', sans-serif;
+    background: transparent no-repeat url('../img/reload.png') center center;
+    background-size: auto 100%;
+    border: none;
+    width: 180px;
+    height: 180px;
+    cursor: pointer;
+    display: inline-block;
+
+    span {
+      color: #052C6E;
+      display: block;
+      width: 100%;
+      visibility: hidden;
+      font-size: 120%;
+      font-weight: bold;
+    }
+  }
+
+  button:hover {
+    span {
+      visibility: visible;
+    }
+  }
+
+  #getRandomPatch {
+
+  }
+
+  #startSound {
+    background-image: url('../img/play.png');
+  }
+
+  #stopSound {
+    background-image: url('../img/stop.png');
+    display: none;
+    background-size: auto 90%;
+  }
+
+}
