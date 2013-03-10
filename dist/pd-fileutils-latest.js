@@ -64,6 +64,18 @@ _.extend(Patch.prototype, {
       , sourceIds = _.uniq(_.map(conns, function(conn) { return conn.source.id }))
       , self = this
     return _.map(sourceIds, function(sourceId) { return self.getNode(sourceId) })
+  },
+
+  addNode: function(node) {
+    if (node.id === undefined) node.id = this.nextId()
+    else if (this.getNode(node.id) !== null) return
+    this.nodes.push(node)
+  },
+
+  nextId: function() {
+    if (this.nodes.length) {
+      return Math.max.apply(Math, _.pluck(this.nodes, 'id')) + 1
+    } else return 0
   }
 
 })
@@ -1009,6 +1021,7 @@ var floatAtomTpl = '#X floatatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}
   exports.parse = require('./lib/parsing').parse
 exports.renderSvg = require('./lib/svg-rendering').render
 exports.renderPd = require('./lib/pd-rendering').render
+exports.Patch = require('./lib/Patch')
 
 })(pdfu)
 
