@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Title of the document</title>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://underscorejs.org/underscore-min.js"></script>
+  <script src="https://raw.github.com/janl/mustache.js/master/mustache.js"></script>
+  <script>var mustache = Mustache</script>
+  <!--<script src="https://raw.github.com/sebpiq/pd-fileutils/master/dist/pd-fileutils-latest.js"></script>-->
+  <script src="../pdfu/dist/pd-fileutils-latest.js"></script>
+  <link href="css/code-highlight.css" rel="stylesheet" />
+
+</head>
+
+<body>
+
+  <button id="getRandomPatch">Random patch</button>
+
+  <div id="svg">
+  </div>
+
+  <div id="json">
+    <pre><code data-language="javascript"></code></pre>
+  </div>
+
+  <div id="pd">
+    <pre><code></code></pre>
+  </div>
+
+  <script>
+    var width = $(document).width(), height = $(document).height()
+      , init = function() {
+        depth = 0
+        patch = new pdfu.Patch({nodes: [], connections: []})
+      }, depth, patch
+      , genOscArgs = function() { return [getRandomInt(1, 10) / 5 * 440] }
+      , modOscArgs = function() { return [0.001 + Math.random() * 20] }
+      , emptyArgs = function() { return [] }
+      , genList = [ ['osc~', 0.5, genOscArgs], ['phasor~', 0.2, genOscArgs], ['noise~', 0.1, emptyArgs], ['*~', 0.6, emptyArgs], ['+~', 0.5, emptyArgs] ]
+      , modList = [ ['osc~', 0.1, modOscArgs], ['phasor~', 0.1, modOscArgs], ['*~', 0.1, emptyArgs]]
+
+
+    var randomSoundGen = function() {
+      return randomTree(genList, 5, function(node) {
+        // Each time a node is created, we pick randomly whether we modulate it or not.
+        if (Math.random() > 0.2) {
+          var mod = randomTree(modList, 2)
+          // Freq modulation if `node` is an oscillator
+          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() > 0.4) {
+            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: node.id, port: 0}})
+            return node
+          // Amplitude modulation otherwise
+          } else {
+            var mult = {proto: '*~', args: []}
+            patch.addNode(mult)
+            patch.connections.push({source: {id: node.id, port: 0}, sink: {id: mult.id, port: 0}})
+            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: mult.id, port: 1}})
+            return mult
+          }
+        } else return node
+      })
+    }
+
+    var randomTree = function(objList, maxDepth, nodeCb) {
+      depth++
+
+      // If max depth is reached, we return null, the parent will take care of picking a leaf
+      if (depth >= maxDepth) {
+        depth--
+        return null
+      }
+
+      var proto, node, randVal, i, cum
+        // For picking a leaf, when the tree is too big
+        , getLeaf = function(parent) {
+          var leaf = {proto: 'sig~'}
+          if (_.contains(['+~', '-~'], parent.proto)) leaf.args = [0]
+          else leaf.args = [1]
+          patch.addNode(leaf)
+          return leaf
+        }
+
+      // Pick a random proto
+      randVal = Math.random() * _.reduce(objList, function(memo, obj) { return memo + obj[1] }, 0)
+      i = 0
+      cum = 0
+      while(true) {
+        cum += objList[i][1]
+        if (cum >= randVal) break
+        i++
+      }
+      proto = objList[i][0]
+      node = {proto: proto, args: objList[i][2]()}
+
+      // If it is a dsp arithmetic, we call the function recursively
+      // to get 2 subtrees that we'll connect together.
+      if (isArithm(node)) {
+        var subtree1 = randomTree(objList, maxDepth)
+          , subtree2 = randomTree(objList, maxDepth)
+
+        // If both subtrees are null, we simply discard the node
+        if (subtree1 === null && subtree2 === null) {
+          node = null
+        } else {
+          patch.addNode(node)
+          if (subtree1 === null) subtree1 = getLeaf(node)
+          if (subtree2 === null) subtree2 = getLeaf(node)
+          patch.connections.push({source: {id: subtree1.id, port: 0}, sink: {id: node.id, port: 0}})
+          patch.connections.push({source: {id: subtree2.id, port: 0}, sink: {id: node.id, port: 1}})
+        }
+      } else patch.addNode(node)
+
+      depth--
+      //if (nodeCb) node = nodeCb(node)
+      return node
+    }
+
+    function getRandomPatch() {
+      init()
+      var node = randomSoundGen()
+        , dac = {proto: 'dac~', args: []}
+        , treeLayout = d3.layout.tree()
+
+      // Connect the root of the tree with [dac~]
+      patch.addNode(dac)
+      patch.connections.push({source: {id: node.id, port: 0}, sink: {id: dac.id, port: 0}})
+      patch.connections.push({source: {id: node.id, port: 0}, sink: {id: dac.id, port: 1}})
+
+      // Create the tree layout
+      treeLayout.children(function(node) {
+        var sources = patch.getSources(node)
+        return sources.length ? sources : null
+      })
+      treeLayout.nodes(dac)
+      _.each(patch.nodes, function(node) {
+        node.layout = {}
+        node.layout.x = node.x * width / 2
+        node.layout.y = height / 2 - node.y * height / 4
+        delete node.parent ; delete node.children 
+      })
+
+      var patchSvg = pdfu.renderSvg(patch, {svgFile: false})
+        , patchPd = pdfu.renderPd(patch)
+      $('#svg').html(patchSvg)
+      $('#json code').html(JSON.stringify(patch, null, 4))
+      $('#pd code').html(patchPd)
+    }
+    $('#getRandomPatch').click(getRandomPatch)
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function isArithm(node) {
+      return _.contains(['+~', '-~', '*~', '/~'], node.proto)
+    }
+    
+  </script>
+
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/rainbow.min.js"></script>
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/generic.js"></script>
+  <script src="https://raw.github.com/ccampbell/rainbow/master/js/language/javascript.js"></script>
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-17637518-3']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+
+</html>

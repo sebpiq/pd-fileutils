@@ -37,6 +37,7 @@
         $('#svg').html(patchSvg)
         $('#json code').html(JSON.stringify(patch, null, 4))
         $('#pd code').html(content)
+        $('#loading').hide()
       }
 
     if (searchResult = gistParamRe.exec(window.location.search)) {
