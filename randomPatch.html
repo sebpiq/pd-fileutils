@@ -17,7 +17,8 @@
 
 <body>
 
-  <button id="getRandomPatch">Random patch</button>
+  <button id="getRandomPatch">Generate another patch</button>
+  <button id="playPatch">Play</button>
 
   <div id="svg">
   </div>
@@ -32,14 +33,14 @@
 
   <script>
     var width = $(document).width(), height = $(document).height()
-      , patch
+      , patch, patchSvg, patchPd, webpdPatch
       // Function to generate the args of sound oscillators
       , genOscArgs = function() { return [getRandomInt(1, 10) / 5 * 440] }
       // Function to generate the args of modulators
       , modOscArgs = function() { return [Math.round(Math.random() * 10 * 10) / 10] }
       , emptyArgs = function() { return [] }
       , genList = [ ['osc~', 0.5, genOscArgs], ['phasor~', 0.2, genOscArgs], ['noise~', 0.1, emptyArgs], ['*~', 0.6, emptyArgs], ['+~', 0.5, emptyArgs] ]
-      , modList = [ ['osc~', 0.1, modOscArgs], ['phasor~', 0.1, modOscArgs], ['*~', 0.1, emptyArgs]]
+      , modList = [ ['osc~', 0.1, modOscArgs], ['*~', 0.1, emptyArgs]]
 
 
     // Generates a random Pd graph that makes sound
@@ -51,7 +52,14 @@
           while(mod === null) mod = randomTree(modList, 3)
           // Freq modulation if `node` is an oscillator
           if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() > 0.2) {
-            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: node.id, port: 0}})
+            var freq = node.args[0]
+              , mult = {proto: '*~', args: [Math.round(Math.random() * 100)]}
+              , add = {proto: '+~', args: [freq]}
+            patch.addNode(mult)
+            patch.addNode(add)
+            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: mult.id, port: 0}})
+            patch.connections.push({source: {id: mult.id, port: 0}, sink: {id: add.id, port: 0}})
+            patch.connections.push({source: {id: add.id, port: 0}, sink: {id: node.id, port: 0}})
             return node
           // Amplitude modulation otherwise
           } else {
@@ -123,7 +131,8 @@
     }
 
     // Function for generating our random patch, and updating the page
-    function getRandomPatch() {
+    var getRandomPatch = function() {
+      if (webpdPatch) webpdPatch.stop()
       patch = new pdfu.Patch({nodes: [], connections: []})
 
       var root = randomSoundGen()
@@ -143,26 +152,34 @@
       treeLayout.nodes(dac)
       _.each(patch.nodes, function(node) {
         node.layout = {}
-        node.layout.x = node.x * width / 2
-        node.layout.y = height / 2 - node.y * height / 4
+        node.layout.x = Math.round(node.x * width / 2)
+        node.layout.y = Math.round(height / 2 - node.y * height / 4)
         delete node.parent ; delete node.children 
       })
 
-      var patchSvg = pdfu.renderSvg(patch, {svgFile: false})
-        , patchPd = pdfu.renderPd(patch)
+      // Rendering and updating the page
+      patchSvg = pdfu.renderSvg(patch, {svgFile: false})
+      patchPd = pdfu.renderPd(patch)
       $('#svg').html(patchSvg)
       $('#json code').html(JSON.stringify(patch, null, 4))
       $('#pd code').html(patchPd)
     }
     $('#getRandomPatch').click(getRandomPatch)
 
+    // Plays the current patch using webpd
+    var playPatch = function() {
+      webpdPatch = Pd.compat.parse(patchPd)
+      webpdPatch.play()
+    }
+    $('#playPatch').click(playPatch)
+
     // Returns a random integer between `min` and `max`
-    function getRandomInt(min, max) {
+    var getRandomInt = function(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     // Returns true if the node is a dsp arithmetic operation
-    function isArithm(node) {
+    var isArithm = function(node) {
       return _.contains(['+~', '-~', '*~', '/~'], node.proto)
     }
 
