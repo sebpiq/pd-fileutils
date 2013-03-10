@@ -43,25 +43,55 @@
   <div id="tabs">
 
     <div id="pd" class="tab">
-      <button id="copyPd">Copy to clipboard</button>
+      <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
       <textarea></textarea>
-      <pre><code></code></pre>
     </div>
 
     <div id="configuration" class="tab">
-      <input id="genOscAmount" type="text" value="50" class="dial genParam">
-      <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
-      <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
-      <input id="genMultAmount" type="text" value="60" class="dial genParam">
-      <input id="genAddAmount" type="text" value="50" class="dial genParam">
 
-      <input id="ampModAmount" type="text" value="" class="dial modParam">
-      <input id="fmModAmount" type="text" value="" class="dial modParam">
+      <div id="genConfig">
+        <h2>Sound Generators</h2>
+        <div class="paramContainer">
+          <input id="genOscAmount" type="text" value="50" class="dial genParam">
+          <div class="paramLabel">Amount of <b>[osc~]</b></div>
+        </div>
+        <div class="paramContainer">
+          <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
+          <div class="paramLabel">Amount of <b>[phasor~]</b></div>
+        </div>
+        <div class="paramContainer">
+          <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
+          <div class="paramLabel">Amount of <b>[noise~]</b></div>
+        </div>
+        <div class="paramContainer">
+          <input id="genMultAmount" type="text" value="60" class="dial genParam">
+          <div class="paramLabel">Amount of <b>[*~]</b></div>
+        </div>
+        <div class="paramContainer">
+          <input id="genAddAmount" type="text" value="50" class="dial genParam">
+          <div class="paramLabel">Amount of <b>[+~]</b></div>
+        </div>
+      </div>
+
+      <div id="modConfig">
+        <h2>Modulation with LFOs</h2>
+        <div class="paramContainer">
+          <input id="totalModAmount" type="text" value="40" class="dial modParam">
+          <div class="paramLabel">Total amount</div>
+        </div>
+        <div class="paramContainer">
+          <input id="fmModAmount" type="text" value="20" class="dial modParam">
+          <div class="paramLabel">Frequency modulation</div>
+        </div>
+      </div>
     </div>
 
     <div id="about" class="tab">
       <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
-      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries, made by <a href="mailto:sebpiq@gmail.com">Sébastien Piquemal</a>. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> alloes to load the patch and play it in the browser without plugin.
+      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> alloes to load the patch and play it in the browser without plugin.
+      </p>
+      <p>
+      ©2013 <a href="mailto:sebpiq@gmail.com">Sébastien Piquemal</a>
       </p>
     </div>
 
@@ -75,6 +105,7 @@
       // Function to generate the args of modulators
       , modOscArgs = function() { return [Math.round(Math.random() * 10 * 10) / 10] }
       , emptyArgs = function() { return [] }
+      , modAmount = 40, fmModAmount = 20
       , genList = [ ['osc~', 50, genOscArgs], ['phasor~', 20, genOscArgs], ['noise~', 10, emptyArgs], ['*~', 60, emptyArgs], ['+~', 50, emptyArgs] ]
       , modList = [ ['osc~', 10, modOscArgs], ['*~', 10, emptyArgs]]
 
@@ -99,13 +130,17 @@
     $('.dial').knob()
     $('.genParam').each(function(i, el) {
       $(this).trigger('configure', {
-        release: function(val) { genList[i][1] = val; console.log(i, val) },
+        release: function(val) { genList[i][1] = val },
         min: 0, max: 100
       })
     })
-
-    $('#copyPd').click(function() {
-      
+    $('#totalModAmount').trigger('configure', {
+      release: function(val) { modAmount = val },
+      min: 0, max: 100
+    })
+    $('#fmModAmount').trigger('configure', {
+      release: function(val) { fmModAmount = val },
+      min: 0, max: 100
     })
 
     // Setup tabs
@@ -126,11 +161,11 @@
     var randomSoundGen = function() {
       return randomTree(genList, 5, function(node) {
         // Each time a node is created, we pick randomly whether we modulate it or not.
-        if (Math.random() > 0.4) {          
+        if (Math.random() * 100 > (100 - modAmount)) {          
           var mod = null
           while(mod === null) mod = randomTree(modList, 3)
           // Freq modulation if `node` is an oscillator
-          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() > 0.2) {
+          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() * 100 > (100 - fmModAmount)) {
             var freq = node.args[0]
               , mult = {proto: '*~', args: [Math.round(Math.random() * 100)]}
               , add = {proto: '+~', args: [freq]}
@@ -241,7 +276,6 @@
       patchPd = pdfu.renderPd(patch)
       webpdPatch = Pd.compat.parse(patchPd)
       $('#svg').html(patchSvg)
-      $('#pd code').html(patchPd)
       $('#pd textarea').val(patchPd)
     }
     $('#getRandomPatch').click(getRandomPatch)

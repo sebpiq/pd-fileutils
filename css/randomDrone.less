@@ -12,6 +12,20 @@ p {
   line-height: 1.4em;
 }
 
+h2 {
+  font-size: 150%;
+  font-weight: bold;
+  margin-bottom: 1em; 
+}
+
+b {
+  font-weight: bold;
+}
+
+i {
+  font-style: italic;
+}
+
 #tabs {
 
   font-family: 'Tauri', sans-serif;
@@ -45,12 +59,21 @@ p {
   }
 
   #pd {
-    pre {
-      font-family: monospace;
-      height: 50%;
-      overflow: auto;
-      border: 1px solid;
-      padding: 1em;
+    textarea {
+      width: 50%;
+      height: 80%;
+      display: block;
+    }
+  }
+
+  #configuration {
+    .paramContainer {
+      display: inline-block;
+      min-width: 12em;
+      text-align: center;
+    }
+    #genConfig {
+      margin-bottom: 3em;
     }
   }
 }
