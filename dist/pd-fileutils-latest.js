@@ -50,6 +50,20 @@ _.extend(Patch.prototype, {
         } else return memo
       }, -1) + 1
     })
+  },
+
+  getSinks: function(node) {
+    var conns = _.filter(this.connections, function(conn) { return conn.source.id === node.id })
+      , sinkIds = _.uniq(_.map(conns, function(conn) { return conn.sink.id }))
+      , self = this
+    return _.map(sinkIds, function(sinkId) { return self.getNode(sinkId) })
+  },
+
+  getSources: function(node) {
+    var conns = _.filter(this.connections, function(conn) { return conn.sink.id === node.id })
+      , sourceIds = _.uniq(_.map(conns, function(conn) { return conn.source.id }))
+      , self = this
+    return _.map(sourceIds, function(sourceId) { return self.getNode(sourceId) })
   }
 
 })
@@ -960,7 +974,7 @@ exports.render = function(patch) {
   rendered += mustache.render(canvasTpl, {args: patch.args, layout: layout}) + ';\n'
 
   // Render all nodes
-  _.forEach(patch.nodes, function(node) {
+  _.forEach(patch.nodes.sort(function(n1, n2){return n1.id - n2.id}), function(node) {
     var layout = _.clone(node.layout || {})
     _.defaults(layout, {x: 0, y: 0})
     rendered += mustache.render(objTpl, {args: node.args, layout: layout, proto: node.proto}) + ';\n'
