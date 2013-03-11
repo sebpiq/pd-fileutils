@@ -128,6 +128,9 @@
       , genList = [ ['osc~', 50, genOscArgs], ['phasor~', 20, genOscArgs], ['noise~', 10, emptyArgs], ['*~', 60, emptyArgs], ['+~', 50, emptyArgs] ]
       , modList = [ ['osc~', 10, modOscArgs], ['*~', 10, emptyArgs]]
 
+    // If WebPd not supported, we remove the "play" button
+    if (!Pd.isSupported()) $('startSound').remove()
+
     // =============== UI =============== //
     // Plays the current patch using webpd
     var startSound = function() {
