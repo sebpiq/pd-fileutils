@@ -296,6 +296,8 @@
       webpdPatch = Pd.compat.parse(patchPd)
       $('#svg').html(patchSvg)
       $('#pd textarea').val(patchPd)
+      // Fix svg size
+      $('#svg svg').css({width: width, height: height})
     }
     $('#getRandomPatch').click(getRandomPatch)
 
