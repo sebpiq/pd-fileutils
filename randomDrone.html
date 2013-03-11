@@ -55,56 +55,63 @@
   <div id="tabs">
 
     <div id="configuration" class="tab">
+      <div class="innerTab">
 
-      <div id="genConfig">
-        <h2>Sound Generators</h2>
-        <div class="paramContainer">
-          <input id="genOscAmount" type="text" value="50" class="dial genParam">
-          <div class="paramLabel">Amount of <b>[osc~]</b></div>
+        <div id="genConfig">
+          <h2>Sound Generators</h2>
+          <div class="paramContainer">
+            <input id="genOscAmount" type="text" value="50" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[osc~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[phasor~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[noise~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genMultAmount" type="text" value="60" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[*~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genAddAmount" type="text" value="50" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[+~]</b></div>
+          </div>
         </div>
-        <div class="paramContainer">
-          <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
-          <div class="paramLabel">Amount of <b>[phasor~]</b></div>
-        </div>
-        <div class="paramContainer">
-          <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
-          <div class="paramLabel">Amount of <b>[noise~]</b></div>
-        </div>
-        <div class="paramContainer">
-          <input id="genMultAmount" type="text" value="60" class="dial genParam">
-          <div class="paramLabel">Amount of <b>[*~]</b></div>
-        </div>
-        <div class="paramContainer">
-          <input id="genAddAmount" type="text" value="50" class="dial genParam">
-          <div class="paramLabel">Amount of <b>[+~]</b></div>
-        </div>
-      </div>
 
-      <div id="modConfig">
-        <h2>Modulation with LFOs</h2>
-        <div class="paramContainer">
-          <input id="totalModAmount" type="text" value="40" class="dial modParam">
-          <div class="paramLabel">Total amount</div>
+        <div id="modConfig">
+          <h2>Modulation with LFOs</h2>
+          <div class="paramContainer">
+            <input id="totalModAmount" type="text" value="40" class="dial modParam">
+            <div class="paramLabel">Total amount</div>
+          </div>
+          <div class="paramContainer">
+            <input id="fmModAmount" type="text" value="20" class="dial modParam">
+            <div class="paramLabel">Frequency modulation</div>
+          </div>
         </div>
-        <div class="paramContainer">
-          <input id="fmModAmount" type="text" value="20" class="dial modParam">
-          <div class="paramLabel">Frequency modulation</div>
-        </div>
+
       </div>
     </div>
 
     <div id="pd" class="tab">
-      <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
-      <textarea></textarea>
+      <div class="innerTab">
+        <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
+        <textarea></textarea>
+      </div>
     </div>
 
     <div id="about" class="tab">
-      <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
-      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> allows to load the patch and play it in the browser without plugin.
-      </p>
-      <p id="copyright">
-      pd-fileutils - Copyright (c) 2013 Sébastien Piquemal <a href="mailto:sebpiq@gmail.com">&lt;sebpiq@gmail.com&gt;</a>. Complete license <a href="https://github.com/sebpiq/pd-fileutils/blob/master/LICENSE.txt">here</a>
-      </p>
+      <div class="innerTab">
+        <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
+        <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> allows to load the patch and play it in the browser without plugin.
+        </p>
+        <p id="copyright">
+        pd-fileutils - Copyright (c) 2013 Sébastien Piquemal <a href="mailto:sebpiq@gmail.com">&lt;sebpiq@gmail.com&gt;</a>. Complete license <a href="https://github.com/sebpiq/pd-fileutils/blob/master/LICENSE.txt">here</a>
+        </p>
+      </div>
     </div>
 
   </div>
