@@ -5,6 +5,7 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  color: #052C6E;
 }
 
 p {
@@ -16,6 +17,12 @@ h2 {
   font-size: 150%;
   font-weight: bold;
   margin-bottom: 1em; 
+}
+
+h1 {
+  text-transform: uppercase;
+  font-size: 180%;
+  margin-bottom: 1em;
 }
 
 b {
@@ -76,6 +83,12 @@ i {
       margin-bottom: 3em;
     }
   }
+
+  #about {
+    #copyright {
+      font-size: 80%;
+    }
+  }
 }
 
 #nav {
@@ -86,42 +99,47 @@ i {
   top: 0;
   right: 0;
   padding-right: 1em;
-  padding-top: 1em;
-  font-size: 220%;
+  padding-top: 0.2em;
+  font-size: 200%;
 
   li {
     cursor: pointer;
     text-align: right;
     color: #052C6E;
     margin-bottom: 1em;
-    padding-right: 0.5em;
-    text-transform: uppercase;
   }
 
 }
 
+#title {
+  display: inline-block;
+  margin-right: 0.1em;
+}
+
 #controls {
-  position: absolute;
-  right: 1em;
-  bottom: 2.5em;
+  display: inline-block;
+  position: relative;
+  bottom: 0.2em;
 
   button {
     font-family: 'Paytone One', sans-serif;
     background: transparent no-repeat url('../img/reload.png') center center;
     background-size: auto 100%;
     border: none;
-    width: 180px;
-    height: 180px;
+    width: 100px;
+    height: 100px;
     cursor: pointer;
     display: inline-block;
 
     span {
+      border-radius: 1em;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 0.1em 0.2em 0.3em 0.1em;
       color: #052C6E;
       display: block;
       width: 100%;
       visibility: hidden;
       font-size: 120%;
-      font-weight: bold;
     }
   }
 
@@ -137,6 +155,10 @@ i {
 
   #startSound {
     background-image: url('../img/play.png');
+    span {
+      position: relative;
+      right: 1em;
+    }
   }
 
   #stopSound {
@@ -145,4 +167,13 @@ i {
     background-size: auto 90%;
   }
 
+}
+
+#social {
+  position: absolute;
+  bottom: 1em;
+  right: 0;
+  #twitter, #github {
+    float: right;
+  }
 }

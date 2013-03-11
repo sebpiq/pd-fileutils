@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Random drone</title>
+  <title>Random drone - [pd-fileutils] & [WebPd] demo</title>
   <meta charset="utf-8">
 
   <script src="js/jquery.min.js"></script>
@@ -26,25 +26,33 @@
   <div id="svg"></div>
 
   <div id="nav">
+    <h1>
+      <div id="title">Random Drone</div>
+      <div id="controls">
+        <button id="getRandomPatch"><span>Randomize</span></button>
+        <button id="startSound"><span>Play</span></button>
+        <button id="stopSound"><span>Stop</span></button>
+      </div>
+    </h1>
     <ul>
-      <li>Download patch</li>
-      <li>Configure</li>
-      <li>About</li>
+      <li>configure</li>
+      <li>get patch</li>
+      <li>about</li>
     </ul>
 
-    <div id="controls">
-      <button id="getRandomPatch"><span>Gimme another</span></button>
-      <button id="startSound"><span>Play</span></button>
-      <button id="stopSound"><span>Stop</span></button>
+    <div id="social">
+      <div id="twitter">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="sebpiq" data-size="large" data-hashtags="WebPd">Tweet</a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </div>
+      <div id="github">
+        <iframe src="http://ghbtns.com/github-btn.html?user=sebpiq&repo=pd-fileutils&type=watch&count=true&size=large"
+          allowtransparency="true" frameborder="0" scrolling="0" width="120" height="30"></iframe>
+      </div>
     </div>
   </div>
 
   <div id="tabs">
-
-    <div id="pd" class="tab">
-      <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
-      <textarea></textarea>
-    </div>
 
     <div id="configuration" class="tab">
 
@@ -85,12 +93,17 @@
       </div>
     </div>
 
+    <div id="pd" class="tab">
+      <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
+      <textarea></textarea>
+    </div>
+
     <div id="about" class="tab">
       <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
-      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> alloes to load the patch and play it in the browser without plugin.
+      <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> allows to load the patch and play it in the browser without plugin.
       </p>
-      <p>
-      ©2013 <a href="mailto:sebpiq@gmail.com">Sébastien Piquemal</a>
+      <p id="copyright">
+      pd-fileutils - Copyright (c) 2013 Sébastien Piquemal <a href="mailto:sebpiq@gmail.com">&lt;sebpiq@gmail.com&gt;</a>. Complete license <a href="https://github.com/sebpiq/pd-fileutils/blob/master/LICENSE.txt">here</a>
       </p>
     </div>
 
@@ -235,6 +248,13 @@
           if (subtree2 === null) subtree2 = getLeaf(node)
           patch.connections.push({source: {id: subtree1.id, port: 0}, sink: {id: node.id, port: 0}})
           patch.connections.push({source: {id: subtree2.id, port: 0}, sink: {id: node.id, port: 1}})
+          // If addition, we normalize the volume
+          if (node.proto === '+~') {
+            var norm = {proto: '*~', args: [0.5]}
+            patch.addNode(norm)
+            patch.connections.push({source: {id: node.id, port: 0}, sink: {id: norm.id, port: 0}})
+            node = norm
+          }
         }
       } else patch.addNode(node)
 
@@ -266,7 +286,7 @@
       _.each(patch.nodes, function(node) {
         node.layout = {}
         node.layout.x = Math.round(node.x * width / 2)
-        node.layout.y = Math.round(height / 2 - node.y * height / 3)
+        node.layout.y = Math.round(2 * height / 3 - node.y * height / 2)
         delete node.parent ; delete node.children 
       })
 
