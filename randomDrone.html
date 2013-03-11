@@ -129,7 +129,7 @@
       , modList = [ ['osc~', 10, modOscArgs], ['*~', 10, emptyArgs]]
 
     // If WebPd not supported, we remove the "play" button
-    if (!Pd.isSupported()) $('startSound').remove()
+    if (!Pd.isSupported()) $('#startSound').remove()
 
     // =============== UI =============== //
     // Plays the current patch using webpd
