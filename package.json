@@ -9,7 +9,8 @@
   },
   "dependencies" : {
     "underscore": "1.4.x",
-    "d3": "3.0.x"
+    "d3": "3.0.x",
+    "mustache": ""
   },
   "scripts": {
     "test": "grunt test"

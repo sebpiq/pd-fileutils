@@ -5,13 +5,53 @@ Pure Data file utilities
 
 This library is a set of tools for handling pure data files.
 
-At the moment it can only parse `.pd` files and render `svg` images from them. Pd files are parsed to a standard JavaScript object, which you can then manipulate very easily (but cannot re-render to `.pd` at the moment :(  ).
+`pd-fileutils` allows you to parse Pd files to a JavaScript object which is easy to modify. Of course, you can also create a patch from scratch. A patch can then be rendered to `pd` format, or to `SVG` if you want an image of it.
 
+Demos
+======
+
+- [Online SVG renderer](http://sebpiq.github.com/pd-fileutils/?gist=5054711) : post your patch to [gist](https://gist.github.com/), and then replace `gist ID` in the url to render it. You can then share that link with your Pd friends.
+- [Random drone generator](http://sebpiq.github.com/pd-fileutils/randomDrone.html) : generate random droning patches (you know ... robot sounds), listen to them online, and download the pd file if you like it. 
+
+
+Usage in the browser
+======================
+
+First download the latest browser build from [`dist/`](https://github.com/sebpiq/pd-fileutils/tree/master/dist).
+
+You will also need [d3](http://d3js.org/) (for svg rendering), [mustache](http://mustache.github.com/) (for pd file rendering) and [underscore](http://underscorejs.org/).
+
+Include them in your page along with `pd-fileutils` : 
+
+```html
+  <script src="js/d3.v3.min.js"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/mustache.js"></script>
+  <script>var mustache = Mustache</script>
+  <script src="js/pd-fileutils.js"></script>
+```
+
+Then you can use `pd-fileutils` in your webpage :
+
+```html
+<div id="svg"></div>
+<script>
+    var patch = pdfu.parse('#N canvas 778 17 450 300 10;\n#X obj 14 13 loadbang;\n#X obj 14 34 print bla;\n#X connect 0 0 1 0;')
+    var rendered = pdfu.renderSvg(patch, {svgFile: false})
+    $('#svg').html(rendered)
+</script>
+```
+
+The complete example can be found [here](http://sebpiq.github.com/pd-fileutils/basic.html).
+
+
+Usage on node.js
+==================
 
 Installation
-=============
+-------------
 
-This is a node package, so to use it, you will need [node.js](http://nodejs.org/).
+Obviously, you will need [node.js](http://nodejs.org/).
 
 Installation is easier with the node package manager [npm](https://npmjs.org/) :
 
@@ -27,7 +67,7 @@ npm install -g pd-fileutils
 
 
 Command-line tool
-==================
+------------------
 
 At the moment, the only thing you can do is render `.pd` files to `.svg`, for example : 
 
