@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Basic example pd-fileutils</title>
+    <meta charset="utf-8">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/d3.v3.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/mustache.js"></script>
+    <script>var mustache = Mustache</script>
+    <script src="https://raw.github.com/sebpiq/pd-fileutils/master/dist/pd-fileutils-latest.js"></script>
+  </head>
+
+  <body>
+    <div id="svg"></div>
+    <script>
+        var patch = pdfu.parse('#N canvas 778 17 450 300 10;\n#X obj 14 13 loadbang;\n#X obj 14 34 print bla;\n#X connect 0 0 1 0;')
+        var rendered = pdfu.renderSvg(patch, {svgFile: false})
+        $('#svg').html(rendered)
+    </script>
+  </body>
+
+</html>
