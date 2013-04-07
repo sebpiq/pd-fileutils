@@ -118,8 +118,7 @@
 
   <script>
     var width = $(document).width(), height = $(document).height()
-      , patch = new pdfu.Patch({nodes: [], connections: []})
-      , patchSvg, patchPd, webpdPatch
+      , patch, patchSvg, patchPd, webpdPatch
       // Function to generate the args of sound oscillators
       , genOscArgs = function() { return [Math.round(getRandomInt(1, 15) / 10 * 440)] }
       // Function to generate the args of modulators
@@ -319,6 +318,7 @@
     // Function for generating our random patch, and updating the page
     var getRandomPatch = function() {
       if (webpdPatch) stopSound()
+      patch = new pdfu.Patch({nodes: [], connections: []})
 
       var dac = {proto: 'dac~', args: []}
         , treeLayout = d3.layout.tree()
