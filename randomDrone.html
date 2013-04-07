@@ -118,7 +118,8 @@
 
   <script>
     var width = $(document).width(), height = $(document).height()
-      , patch, patchSvg, patchPd, webpdPatch
+      , patch = new pdfu.Patch({nodes: [], connections: []})
+      , patchSvg, patchPd, webpdPatch
       // Function to generate the args of sound oscillators
       , genOscArgs = function() { return [Math.round(getRandomInt(1, 15) / 10 * 440)] }
       // Function to generate the args of modulators
