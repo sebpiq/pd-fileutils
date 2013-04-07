@@ -318,11 +318,16 @@
     // Function for generating our random patch, and updating the page
     var getRandomPatch = function() {
       if (webpdPatch) stopSound()
-      patch = new pdfu.Patch({nodes: [], connections: []})
 
-      var root = randomSoundGen()
-        , dac = {proto: 'dac~', args: []}
+      var dac = {proto: 'dac~', args: []}
         , treeLayout = d3.layout.tree()
+        , root
+
+      // We don't want too simple patches
+      while(patch.nodes.length <= 2) {
+        patch = new pdfu.Patch({nodes: [], connections: []})
+        root = randomSoundGen()
+      }
 
       // Connect the root of the tree with [dac~]
       patch.addNode(dac)
