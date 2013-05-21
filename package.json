@@ -1,6 +1,6 @@
 {
   "name": "pd-fileutils",
-  "version": "0.0.2",
+  "version": "0.3.1",
   "global": true,
   "description": "A set of utilities for Pure Data files : parser, image generator.",
   "main": "index.js",

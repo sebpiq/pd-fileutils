@@ -10,7 +10,7 @@ This library is a set of tools for handling pure data files.
 Demos
 ======
 
-- [Online SVG renderer](http://sebpiq.github.com/pd-fileutils/?gist=5054711) : post your patch to [gist](https://gist.github.com/), and then replace `gist ID` in the url to render it. You can then share that link with your Pd friends.
+- [Online SVG renderer](http://sebpiq.github.com/pd-fileutils/onlineSvgRenderer.html) : post your patch to [gist](https://gist.github.com/), and then replace `gist ID` in the url to render it. You can then share that link with your Pd friends.
 - [Random drone generator](http://sebpiq.github.com/pd-fileutils/randomDrone.html) : generate random droning patches (you know ... robot sounds), listen to them online, and download the pd file if you like it. 
 
 
