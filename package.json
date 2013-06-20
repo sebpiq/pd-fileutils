@@ -7,15 +7,17 @@
   "directories": {
     "test": "test"
   },
-  "dependencies" : {
+  "dependencies": {
     "underscore": "1.4.x",
     "d3": "3.0.x",
-    "mustache": ""
+    "mustache": "0.7.x"
   },
   "scripts": {
     "test": "grunt test"
   },
-  "bin": { "pd-fileutils": "./bin/pd-fileutils" },
+  "bin": {
+    "pd-fileutils": "./bin/pd-fileutils"
+  },
   "repository": {
     "type": "git",
     "url": "git@github.com:sebpiq/pd-fileutils.git"
@@ -31,10 +33,11 @@
   },
   "license": "Standard Improved BSD License",
   "devDependencies": {
-    "grunt": "",
+    "browserify": "2.18.x",
+    "grunt": "0.4.x",
     "grunt-simple-mocha": "",
     "grunt-contrib-uglify": "",
     "grunt-contrib-concat": "",
-    "mustache": ""
+    "grunt-browserify": "1.1.x"
   }
 }

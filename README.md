@@ -109,6 +109,12 @@ Where `<nodeK>` is with format :
 }
 ```
 
+- `layout` : a map containing all the layout properties of the object/patch.
+- `args` : an array of the creation arguments of the object/patch. Those can be only strings or numbers.
+- `data` : *[only for tables]* a list of numbers.
+- `subpatch` : *[only for subpatches]* contains the whole subpatch's graph.
+
+
 And `<connectionK>` :
 
 ```
@@ -123,14 +129,6 @@ And `<connectionK>` :
     }
 }
 ```
-
-- `layout` : a map containing all the layout properties of the object/patch.
-
-- `args` : an array of the creation arguments of the object/patch. Those can be only strings or numbers.
-
-- `data` : a list of numbers, only for tables.
-
-- `subpatch` : contains the whole subpatch's graph, only for subpatches.
 
 
 ###parse(pdFile)
@@ -179,3 +177,4 @@ History
 ----
 
 - basic parsing
+

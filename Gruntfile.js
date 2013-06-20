@@ -36,34 +36,19 @@ module.exports = function(grunt) {
         src: 'dist/<%= pkg.name %>-latest.js',
         dest: 'dist/<%= pkg.name %>-latest.min.js'
       }
-    }
+    },
 
+    browserify: {
+      'dist/pd-fileutils-latest.js': ['index.js']
+    }
 
   })
 
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-concat')
-  grunt.registerTask('build', ['clientify', 'uglify'])
+  grunt.loadNpmTasks('grunt-browserify')
+  grunt.registerTask('build', ['browserify', 'uglify'])
   grunt.loadNpmTasks('grunt-simple-mocha')
   grunt.registerTask('test', 'simplemocha')
-
-  grunt.registerTask('clientify', 'Build the library to be usable in the browser', function() {
-    var mustache = require('mustache')
-      , template = fs.readFileSync('browser-build.mustache').toString()
-      , context = {
-        'Patch': fs.readFileSync('lib/Patch.js').toString(),
-        'parsing': fs.readFileSync('lib/parsing.js'),
-        'svgRendering': fs.readFileSync('lib/svg-rendering.js'),
-        'pdRendering': fs.readFileSync('lib/pd-rendering.js'),
-        'index': fs.readFileSync('index.js')
-      }
-      fs.writeFileSync('dist/' + grunt.config.data.pkg.name + '-latest.js', mustache.to_html(template, context))
-      /*
-          grunt.fatal(err);
-      }
-      ;
-      grunt.log.writeln('"' + fileMap[filename] + '" written');*/
-  })
-
 }
 
