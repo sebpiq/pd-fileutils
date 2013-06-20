@@ -81,7 +81,11 @@ API documentation
 
 ###Patch objects
 
-`pd-fileutils` deals with JavaScript objects representing patches. Their format is the following :
+`pd-fileutils` deals with JavaScript objects representing patches.
+
+####Specification
+
+Patch object :
 
 ```
 {
@@ -100,7 +104,8 @@ Where `<nodeK>` is with format :
     proto: <object type>,
     args:  [<arg1>, ..., <argN>],
     layout: {<key>: <value>},
-    data: [<number1>, ..., <numberN>] // only for tables
+    data: [<number1>, ..., <numberN>],
+    subpatch: <a patch object>
 }
 ```
 
@@ -119,10 +124,13 @@ And `<connectionK>` :
 }
 ```
 
-`layout` : An object containing all the layout properties of the object.
-`args` : An array of the creation arguments of the object. Those can be only strings or numbers.
+- `layout` : a map containing all the layout properties of the object/patch.
 
+- `args` : an array of the creation arguments of the object/patch. Those can be only strings or numbers.
 
+- `data` : a list of numbers, only for tables.
+
+- `subpatch` : contains the whole subpatch's graph, only for subpatches.
 
 
 ###parse(pdFile)
