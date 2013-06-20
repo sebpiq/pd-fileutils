@@ -17,21 +17,13 @@ Demos
 Usage in the browser
 ======================
 
-First download the latest browser build from [`dist/`](https://github.com/sebpiq/pd-fileutils/tree/master/dist).
-
-You will also need [d3](http://d3js.org/) (for svg rendering), [mustache](http://mustache.github.com/) (for pd file rendering) and [underscore](http://underscorejs.org/).
-
-Include them in your page along with `pd-fileutils` : 
+First download the latest (or latest stable) browser build from [`dist/`](https://github.com/sebpiq/pd-fileutils/tree/master/dist) and include it in your page : 
 
 ```html
-  <script src="js/d3.v3.min.js"></script>
-  <script src="js/underscore-min.js"></script>
-  <script src="js/mustache.js"></script>
-  <script>var mustache = Mustache</script>
   <script src="js/pd-fileutils.js"></script>
 ```
 
-Then you can use `pd-fileutils` in your webpage :
+Then you can use `pd-fileutils` :
 
 ```html
 <div id="svg"></div>
