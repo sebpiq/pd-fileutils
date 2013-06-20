@@ -76,6 +76,81 @@ pd-fileutils myPatch.pd > myPatch.svg
 ```
 
 
+API documentation
+-------------------
+
+###Patch objects
+
+`pd-fileutils` deals with JavaScript objects representing patches. Their format is the following :
+
+```
+{
+    nodes: [<node1>, ..., <nodeN>],
+    connections: [<connection1>, ..., <connectionN>],
+    args: [<arg1>, ..., <argN>],
+    layout: {<key>: <value>},
+}
+```
+
+Where `<nodeK>` is with format :
+
+```
+{
+    id: <id>,
+    proto: <object type>,
+    args:  [<arg1>, ..., <argN>],
+    layout: {<key>: <value>},
+    data: [<number1>, ..., <numberN>] // only for tables
+}
+```
+
+And `<connectionK>` :
+
+```
+{
+    source: {
+        id: <source object id>,
+        port: <outlet>
+    },
+    sink: {
+        id: <sink object id>,
+        port: <inlet>
+    }
+}
+```
+
+`layout` : An object containing all the layout properties of the object.
+`args` : An array of the creation arguments of the object. Those can be only strings or numbers.
+
+
+
+
+###parse(pdFile)
+
+Parses the string `pdFile` to a patch object. Example usage on `Node.js` :
+
+```javascript
+var pdfu = require('pd-fileutils')
+  , fs = require('fs')
+  , patchStr, patch
+
+// Read the file
+patchStr = fs.readFileSync('./simple.pd').toString()
+
+// Parse the read file
+patch = pdfu.parse(patchStr)
+```
+
+###renderPd(patch)
+
+Renders the `patch` object to a string in the Pd file format.
+
+
+###renderSvg(patch)
+
+Renders the `patch` object to a string in SVG format
+
+
 History
 ========
 
