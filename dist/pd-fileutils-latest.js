@@ -4,6 +4,8 @@ exports.renderSvg = require('./lib/svg-rendering').render
 exports.renderPd = require('./lib/pd-rendering').render
 exports.Patch = require('./lib/Patch')
 
+if (typeof window !== 'undefined') window.pdfu = exports
+
 },{"./lib/parsing":2,"./lib/svg-rendering":3,"./lib/pd-rendering":4,"./lib/Patch":5}],2:[function(require,module,exports){
 /*
  * Copyright (c) 2012-2013 Sébastien Piquemal <sebpiq@gmail.com>
