@@ -1,6 +1,7 @@
 var path = require('path')
   , fs = require('fs')
   , assert = require('assert')
+  , mustache = require('mustache')
   , parsing = require('../lib/parsing')
   , svg = require('../lib/svg-rendering')
 
@@ -21,18 +22,22 @@ describe('svg-rendering', function() {
     })
 
     it('should succeed rendering all test patches', function() {
-      var simplePatch = fs.readFileSync(path.join(__dirname, 'patches', 'simple.pd')).toString()
-        , arraysPatch = fs.readFileSync(path.join(__dirname, 'patches', 'arrays.pd')).toString()
-        , subpatchesPatch = fs.readFileSync(path.join(__dirname, 'patches', 'subpatches.pd')).toString()
-        , nodeElemsPatch = fs.readFileSync(path.join(__dirname, 'patches', 'node-elems.pd')).toString()
-      simplePatch = parsing.parse(simplePatch)
-      arraysPatch = parsing.parse(arraysPatch)
-      subpatchesPatch = parsing.parse(subpatchesPatch)
-      nodeElemsPatch = parsing.parse(nodeElemsPatch)
-      fs.writeFileSync(path.join(__dirname, 'rendered', 'simple.svg'), svg.render(simplePatch))
-      fs.writeFileSync(path.join(__dirname, 'rendered', 'arrays.svg'), svg.render(arraysPatch))
-      fs.writeFileSync(path.join(__dirname, 'rendered', 'subpatches.svg'), svg.render(subpatchesPatch))
-      fs.writeFileSync(path.join(__dirname, 'rendered', 'node-elems.svg'), svg.render(nodeElemsPatch))
+      // Render svgs
+      var svgFilenames = []
+      fs.readdirSync(path.join(__dirname, 'patches')).forEach(function(filename) {
+        var patchStr = fs.readFileSync(path.join(__dirname, 'patches', filename)).toString()
+          , patch = parsing.parse(patchStr)
+          , svgFilename = filename.slice(0, -3) + '.svg'
+        svgFilenames.push(svgFilename)
+        fs.writeFileSync(path.join(__dirname, 'rendered', svgFilename), svg.render(patch))
+      })
+
+      // Put them all in a single HTML page
+      var template = fs.readFileSync(path.join(__dirname, 'rendered', 'embedded-in-a-page.hbs')).toString()
+        , images = ''
+        , htmlFilename = path.join(__dirname, 'rendered', 'embedded-in-a-page.html')
+      svgFilenames.forEach(function(filename) { images += '<img src="' + filename + '"/>' })
+      fs.writeFileSync(htmlFilename, mustache.render(template, { images: images }))
     })
 
   })
