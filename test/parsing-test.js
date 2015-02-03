@@ -55,6 +55,11 @@ describe('parsing', function() {
       assert.equal(parsing.parseArg('\\$15-bla-\\$0'), '$15-bla-$0')
     })
 
+    it('should unescape comas and semicolons', function() {
+      assert.equal(parsing.parseArg('\\,bla'), ',bla')
+      assert.equal(parsing.parseArg('lolo\\;\\,'), 'lolo;,')
+    })
+
     it('should raise error with invalid args', function() {
       assert.throws(function() {
         parsing.parseArg([1, 2])
