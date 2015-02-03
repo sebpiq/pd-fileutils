@@ -12,8 +12,13 @@
     "d3": "3.0.x",
     "mustache": "0.7.x"
   },
+  "devDependencies": {
+    "browserify": "8.1.x",
+    "mocha": "2.1.x"
+  },
   "scripts": {
-    "test": "grunt test"
+    "test": "mocha --recursive test/",
+    "build": "browserify index.js > dist/pd-fileutils-latest.js"
   },
   "bin": {
     "pd-fileutils": "./bin/pd-fileutils"
@@ -31,13 +36,5 @@
     "email": "sebpiq@gmail.com",
     "url": "http://funktion.fm/"
   },
-  "license": "Standard Improved BSD License",
-  "devDependencies": {
-    "browserify": "2.18.x",
-    "grunt": "0.4.x",
-    "grunt-simple-mocha": "",
-    "grunt-contrib-uglify": "",
-    "grunt-contrib-concat": "",
-    "grunt-browserify": "1.1.x"
-  }
+  "license": "Standard Improved BSD License"
 }
