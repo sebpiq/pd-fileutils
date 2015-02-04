@@ -1,0 +1,112 @@
+/* http://colorschemedesigner.com/#3H51Ew0w0w0w0 */
+
+#nav {
+  height: 100%;
+  min-width: 35%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-right: 1em;
+  padding-top: 0.2em;
+  font-size: 200%;
+
+  li {
+    text-align: right;
+    margin-bottom: 1em;
+  }
+
+}
+
+
+#tabs {
+
+  #pd {
+    .innerTab {
+      height: 80%;
+      textarea {
+        width: 50%;
+        height: 100%;
+        display: block;
+      }
+    }
+  }
+
+  #configuration {
+    .paramContainer {
+      display: inline-block;
+      min-width: 12em;
+      text-align: center;
+    }
+    #genConfig {
+      margin-bottom: 3em;
+    }
+  }
+
+  #about {
+    #copyright {
+      font-size: 80%;
+    }
+  }
+}
+
+#controls {
+  display: inline-block;
+  position: relative;
+  bottom: 0.2em;
+
+  button {
+    font-family: 'Paytone One', sans-serif;
+    background: transparent no-repeat url('../img/reload.png') center center;
+    background-size: auto 100%;
+    border: none;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    display: inline-block;
+
+    span {
+      border-radius: 1em;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 0.1em 0.2em 0.3em 0.1em;
+      color: #052C6E;
+      display: block;
+      width: 100%;
+      visibility: hidden;
+      font-size: 120%;
+    }
+  }
+
+  button:hover {
+    span {
+      visibility: visible;
+    }
+  }
+
+  #getRandomPatch {
+
+  }
+
+  #startSound {
+    background-image: url('../img/play.png');
+    span {
+      position: relative;
+      right: 1em;
+    }
+  }
+
+  #stopSound {
+    background-image: url('../img/stop.png');
+    display: none;
+    background-size: auto 90%;
+  }
+
+}
+
+#social {
+  position: absolute;
+  bottom: 1em;
+  right: 0;
+  #twitter, #github {
+    float: right;
+  }
+}

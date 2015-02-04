@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random drone - [pd-fileutils] & [WebPd] demo</title>
+  <meta charset="utf-8">
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/d3.v3.min.js"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/jquery.knob.js"></script>
+  <script src="js/webpd-latest.js"></script>
+  <script src="js/pd-fileutils-latest.js"></script>
+  <link href="css/reset.css" rel="stylesheet" />
+  <link href='http://fonts.googleapis.com/css?family=Paytone+One' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Tauri' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet/less" type="text/css" href="css/common.less" />
+  <link rel="stylesheet/less" type="text/css" href="css/randomDrone.less" />
+  <script src="js/less-1.3.3.min.js" type="text/javascript"></script>
+
+
+</head>
+
+<body>
+
+  <div id="svg"></div>
+
+  <div id="nav">
+    <h1>
+      <div id="title">Random Drone</div>
+      <div id="controls">
+        <button id="getRandomPatch"><span>Randomize</span></button>
+        <button id="startSound"><span>Play</span></button>
+        <button id="stopSound"><span>Stop</span></button>
+      </div>
+    </h1>
+    <ul>
+      <li>configure</li>
+      <li>get patch</li>
+      <li>about</li>
+    </ul>
+
+    <div id="social">
+      <div id="twitter">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-via="sebpiq" data-size="large" data-hashtags="WebPd">Tweet</a>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="http://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+      </div>
+      <div id="github">
+        <iframe src="http://ghbtns.com/github-btn.html?user=sebpiq&repo=pd-fileutils&type=watch&count=true&size=large"
+          allowtransparency="true" frameborder="0" scrolling="0" width="120" height="30"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabs">
+
+    <div id="configuration" class="tab">
+      <div class="innerTab">
+
+        <div id="genConfig">
+          <h2>Sound Generators</h2>
+          <div class="paramContainer">
+            <input id="genOscAmount" type="text" value="50" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[osc~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genPhasorAmount" type="text" value="20" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[phasor~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genNoiseAmount" type="text" value="10" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[noise~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genMultAmount" type="text" value="60" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[*~]</b></div>
+          </div>
+          <div class="paramContainer">
+            <input id="genAddAmount" type="text" value="50" class="dial genParam">
+            <div class="paramLabel">Amount of <b>[+~]</b></div>
+          </div>
+        </div>
+
+        <div id="modConfig">
+          <h2>Modulation with LFOs</h2>
+          <div class="paramContainer">
+            <input id="totalModAmount" type="text" value="40" class="dial modParam">
+            <div class="paramLabel">Total amount</div>
+          </div>
+          <div class="paramContainer">
+            <input id="fmModAmount" type="text" value="20" class="dial modParam">
+            <div class="paramLabel">Frequency modulation</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="pd" class="tab">
+      <div class="innerTab">
+        <span>Copy paste the following text, and save it in a <i>.pd</i> file</span>
+        <textarea></textarea>
+      </div>
+    </div>
+
+    <div id="about" class="tab">
+      <div class="innerTab">
+        <p>This is a random drone generator. You can generate a random drone sound, then download the Pure Data patch by clicking on "Download PD patch".</p>
+        <p>This is a demo of the <a href="https://github.com/sebpiq/pd-fileutils">pd-fileutils</a> and the <a href="https://github.com/sebpiq/WebPd">WebPd</a> libraries. <b>pd-fileutils</b> is used to generate the random patch, and <b>WebPd</b> allows to load the patch and play it in the browser without plugin.
+        </p>
+        <p id="copyright">
+        pd-fileutils - Copyright (c) 2013 Sébastien Piquemal <a href="mailto:sebpiq@gmail.com">&lt;sebpiq@gmail.com&gt;</a>. Complete license <a href="https://github.com/sebpiq/pd-fileutils/blob/master/LICENSE.txt">here</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    var width = $(document).width(), height = $(document).height()
+      , patch, patchSvg, patchPd, webpdPatch
+      // Function to generate the args of sound oscillators
+      , genOscArgs = function() { return [Math.round(getRandomInt(1, 15) / 10 * 440)] }
+      // Function to generate the args of modulators
+      , modOscArgs = function() { return [Math.round(Math.random() * 10 * 10) / 10] }
+      , emptyArgs = function() { return [] }
+      , modAmount = 40, fmModAmount = 20
+      , genList = [ ['osc~', 50, genOscArgs], ['phasor~', 20, genOscArgs], ['noise~', 10, emptyArgs], ['*~', 60, emptyArgs], ['+~', 50, emptyArgs] ]
+      , modList = [ ['osc~', 10, modOscArgs], ['*~', 10, emptyArgs]]
+
+    // If WebPd not supported, we remove the "play" button
+    if (!Pd.isSupported()) $('#startSound').remove()
+
+    // =============== UI =============== //
+    // Plays the current patch using webpd
+    var startSound = function() {
+      webpdPatch.play()
+      $('#stopSound').show()
+      $('#startSound').hide()
+    }
+    $('#startSound').click(startSound)
+
+    // Stops playing the patch
+    var stopSound = function() {
+      webpdPatch.stop()
+      $('#startSound').show()
+      $('#stopSound').hide()
+    }
+    $('#stopSound').click(stopSound)
+
+    // Generator configuration
+    $('.dial').knob({
+      displayInput: false, width: 150, height: 150,
+      thickness: 0.2, fgColor: '#6A92D4',
+      // new skin
+      draw : function () {
+        var a = this.angle(this.cv)  // Angle
+          , sa = this.startAngle          // Previous start angle
+          , sat = this.startAngle         // Start angle
+          , ea                            // Previous end angle
+          , eat = sat + a                 // End angle
+          , r = true
+
+        this.g.lineWidth = this.lineWidth
+
+        this.o.cursor
+          && (sat = eat - 0.3)
+          && (eat = eat + 0.3)
+
+        if (this.o.displayPrevious) {
+          ea = this.startAngle + this.angle(this.value)
+          this.o.cursor
+            && (sa = ea - 0.3)
+            && (ea = ea + 0.3)
+          this.g.beginPath()
+          this.g.strokeStyle = this.previousColor
+          this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sa, ea, false)
+          this.g.stroke()
+        }
+
+        this.g.beginPath()
+        this.g.strokeStyle = r ? this.o.fgColor : this.fgColor 
+        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sat, eat, false)
+        this.g.stroke()
+
+        this.g.lineWidth = 2
+        this.g.beginPath()
+        this.g.strokeStyle = this.o.fgColor
+        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false)
+        this.g.stroke()
+
+        return false
+      }
+    })
+    $('.genParam').each(function(i, el) {
+      $(this).trigger('configure', {
+        release: function(val) { genList[i][1] = val },
+        min: 0, max: 100
+      })
+    })
+    $('#totalModAmount').trigger('configure', {
+      release: function(val) { modAmount = val },
+      min: 0, max: 100
+    })
+    $('#fmModAmount').trigger('configure', {
+      release: function(val) { fmModAmount = val },
+      min: 0, max: 100
+    })
+
+    // Setup tabs
+    $('#nav li').each(function(i, li) {
+      $(li).click(function() {
+        $('#tabs .tab').removeClass('active')
+        $('#tabs .tab').slice(i, i+1).addClass('active')
+      })
+    })
+    $('#tabs .tab').each(function(i, tab) {
+      $('<a>', {'class': 'closeTab'}).html('X').appendTo(tab).click(function() {
+        $(tab).removeClass('active')
+      })
+    })
+
+    // =============== Patch generation =============== //
+    // Generates a random Pd graph that makes sound
+    var randomSoundGen = function() {
+      return randomTree(genList, 5, function(node) {
+        // Each time a node is created, we pick randomly whether we modulate it or not.
+        if (Math.random() * 100 > (100 - modAmount)) {          
+          var mod = null
+          while(mod === null) mod = randomTree(modList, 3)
+          // Freq modulation if `node` is an oscillator
+          if (_.contains(['osc~', 'phasor~'], node.proto) && Math.random() * 100 > (100 - fmModAmount)) {
+            var freq = node.args[0]
+              , mult = {proto: '*~', args: [Math.round(Math.random() * 100)]}
+              , add = {proto: '+~', args: [freq]}
+            patch.addNode(mult)
+            patch.addNode(add)
+            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: mult.id, port: 0}})
+            patch.connections.push({source: {id: mult.id, port: 0}, sink: {id: add.id, port: 0}})
+            patch.connections.push({source: {id: add.id, port: 0}, sink: {id: node.id, port: 0}})
+            return node
+          // Amplitude modulation otherwise
+          } else {
+            var mult = {proto: '*~', args: []}
+            patch.addNode(mult)
+            patch.connections.push({source: {id: node.id, port: 0}, sink: {id: mult.id, port: 0}})
+            patch.connections.push({source: {id: mod.id, port: 0}, sink: {id: mult.id, port: 1}})
+            return mult
+          }
+        } else return node
+      })
+    }
+
+    // Generic function for generating a random tree of Pd objects. 
+    var randomTree = function(objList, maxDepth, nodeCb, curDepth) {
+      curDepth = (curDepth === undefined) ? -1 : curDepth
+      curDepth++
+
+      // If max depth is reached, we return null, the parent will take care of picking a leaf
+      if (curDepth >= maxDepth) {
+        curDepth--
+        return null
+      }
+
+      var proto, node, randVal, i, cum
+        // For picking a leaf, when the tree is too big
+        , getLeaf = function(parent) {
+          var leaf = {proto: 'sig~'}
+          if (_.contains(['+~', '-~'], parent.proto)) leaf.args = [0]
+          else leaf.args = [1]
+          patch.addNode(leaf)
+          return leaf
+        }
+
+      // Pick a random proto
+      randVal = Math.random() * _.reduce(objList, function(memo, obj) { return memo + obj[1] }, 0)
+      i = 0
+      cum = 0
+      while(true) {
+        cum += objList[i][1]
+        if (cum >= randVal) break
+        i++
+      }
+      proto = objList[i][0]
+      node = {proto: proto, args: objList[i][2]()}
+
+      // If it is a dsp arithmetic, we call the function recursively
+      // to get 2 subtrees that we'll connect together.
+      if (isArithm(node)) {
+        var subtree1 = randomTree(objList, maxDepth, nodeCb, curDepth)
+          , subtree2 = randomTree(objList, maxDepth, nodeCb, curDepth)
+
+        // If both subtrees are null, we simply discard the node
+        if (subtree1 === null && subtree2 === null) {
+          curDepth--
+          return null
+        } else {
+          patch.addNode(node)
+          if (subtree1 === null) subtree1 = getLeaf(node)
+          if (subtree2 === null) subtree2 = getLeaf(node)
+          patch.connections.push({source: {id: subtree1.id, port: 0}, sink: {id: node.id, port: 0}})
+          patch.connections.push({source: {id: subtree2.id, port: 0}, sink: {id: node.id, port: 1}})
+          // If addition, we normalize the volume
+          if (node.proto === '+~') {
+            var norm = {proto: '*~', args: [0.5]}
+            patch.addNode(norm)
+            patch.connections.push({source: {id: node.id, port: 0}, sink: {id: norm.id, port: 0}})
+            node = norm
+          }
+        }
+      } else patch.addNode(node)
+
+      curDepth--
+      if (nodeCb) node = nodeCb(node)
+      return node
+    }
+
+    // Function for generating our random patch, and updating the page
+    var getRandomPatch = function() {
+      if (webpdPatch) stopSound()
+      patch = new pdfu.Patch({nodes: [], connections: []})
+
+      var dac = {proto: 'dac~', args: []}
+        , treeLayout = d3.layout.tree()
+        , root
+
+      // We don't want too simple patches
+      while(patch.nodes.length <= 2) {
+        patch = new pdfu.Patch({nodes: [], connections: []})
+        root = randomSoundGen()
+      }
+
+      // Connect the root of the tree with [dac~]
+      patch.addNode(dac)
+      patch.connections.push({source: {id: root.id, port: 0}, sink: {id: dac.id, port: 0}})
+      patch.connections.push({source: {id: root.id, port: 0}, sink: {id: dac.id, port: 1}})
+
+      // Create the tree layout
+      treeLayout.children(function(node) {
+        var sources = patch.getSources(node)
+        return sources.length ? sources : null
+      })
+      treeLayout.nodes(dac)
+      _.each(patch.nodes, function(node) {
+        node.layout = {}
+        node.layout.x = Math.round(node.x * width / 2)
+        node.layout.y = Math.round(2 * height / 3 - node.y * height / 2)
+        delete node.parent ; delete node.children 
+      })
+
+      // Rendering and updating the page
+      patchSvg = pdfu.renderSvg(patch, {svgFile: false})
+      patchPd = pdfu.renderPd(patch)
+      webpdPatch = Pd.compat.parse(patchPd)
+      $('#svg').html(patchSvg)
+      $('#pd textarea').val(patchPd)
+      // Fix svg size
+      $('#svg svg').css({width: width, height: height})
+    }
+    $('#getRandomPatch').click(getRandomPatch)
+
+    // Returns a random integer between `min` and `max`
+    var getRandomInt = function(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min
+    }
+
+    // Returns true if the node is a dsp arithmetic operation
+    var isArithm = function(node) {
+      return _.contains(['+~', '-~', '*~', '/~'], node.proto)
+    }
+    
+    getRandomPatch()
+  </script>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || []
+    _gaq.push(['_setAccount', 'UA-17637518-3'])
+    _gaq.push(['_trackPageview'])
+
+    ;(function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })()
+
+  </script>
+</body>
+
+</html>
