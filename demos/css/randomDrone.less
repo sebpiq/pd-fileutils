@@ -1,6 +1,49 @@
 /* http://colorschemedesigner.com/#3H51Ew0w0w0w0 */
 
+html, body {
+  font-size: 20px;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  color: #052C6E;
+}
+
+p {
+  margin-bottom: 1em;
+  line-height: 1.4em;
+}
+
+h2 {
+  font-size: 150%;
+  font-weight: bold;
+  margin-bottom: 1em; 
+}
+
+h1 {
+  text-transform: uppercase;
+  font-size: 180%;
+  margin-bottom: 1em;
+}
+
+b {
+  font-weight: bold;
+}
+
+i {
+  font-style: italic;
+}
+
+ol {
+  list-style: decimal;
+}
+
+#title {
+  display: inline-block;
+  margin-right: 0.1em;
+}
+
 #nav {
+  font-family: 'Paytone One', sans-serif;
   height: 100%;
   min-width: 35%;
   position: absolute;
@@ -13,12 +56,49 @@
   li {
     text-align: right;
     margin-bottom: 1em;
+    cursor: pointer;
+    color: #052C6E;
   }
 
 }
 
 
 #tabs {
+  font-family: 'Tauri', sans-serif;
+
+  .tab {
+    font-size: 110%;
+    color: lighten(#6A92D4, 50%);
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    &.active {display: block;}    
+
+    .innerTab {
+      padding: 5%;
+      width: 90%;
+      height: 90%;
+      overflow: auto;
+    }
+
+    a, a:visited, a:hover {
+      text-decoration: none;
+      color: #6A92D4;
+    }
+
+    a.closeTab {
+      font-family: 'Paytone One', sans-serif;
+      position: absolute;
+      top: 1%;
+      right: 1%;
+      cursor: pointer;
+      font-size: 140%;
+    }
+  }
 
   #pd {
     .innerTab {
@@ -109,4 +189,8 @@
   #twitter, #github {
     float: right;
   }
+}
+
+#svg svg {
+  position: relative;
 }

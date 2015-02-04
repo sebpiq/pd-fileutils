@@ -472,6 +472,7 @@ exports.render = function(patch, opts) {
       .attr('style', 'font-family:monospace')
       .attr('xmlns', 'http://www.w3.org/2000/svg')
       .attr('version', '1.1')
+    , root = svg.append('g')
     , connections, nodes
 
   // Creating all renderers
@@ -495,7 +496,7 @@ exports.render = function(patch, opts) {
   })
 
   // Render the nodes
-  nodes = svg.selectAll('g.node')
+  nodes = root.selectAll('g.node')
     .data(patch.nodes)
     .enter()
     .append('g')
@@ -506,7 +507,7 @@ exports.render = function(patch, opts) {
     .each(function(renderer, i) { renderer.render(d3.select(this)) })
 
   // Render the connections
-  connections = svg.selectAll('line.connection')
+  connections = root.selectAll('line.connection')
     .data(patch.connections)
     .enter()
     .append('line')
@@ -546,7 +547,7 @@ exports.render = function(patch, opts) {
   bottomRight.y = _.max(allY2)
   svg.attr('width', bottomRight.x - topLeft.x + opts.padding * 2)
   svg.attr('height', bottomRight.y - topLeft.y + opts.padding * 2)
-  svg.attr('transform', 'translate('
+  root.attr('transform', 'translate('
     + (-topLeft.x + opts.padding) + ' '
     + (-topLeft.y + opts.padding) + ')'
   )
