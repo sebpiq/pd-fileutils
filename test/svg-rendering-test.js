@@ -24,16 +24,18 @@ describe('svg-rendering', function() {
     it('should succeed rendering all test patches', function() {
       // Render svgs
       var svgFilenames = []
-      fs.readdirSync(path.join(__dirname, 'patches')).forEach(function(filename) {
-        var patchStr = fs.readFileSync(path.join(__dirname, 'patches', filename)).toString()
-          , patch = parsing.parse(patchStr)
-          , svgFilename = filename.slice(0, -3) + '.svg'
-        svgFilenames.push(svgFilename)
-        fs.writeFileSync(path.join(__dirname, 'rendered', svgFilename), svg.render(patch))
-      })
+      fs.readdirSync(path.join(__dirname, 'patches'))
+        .filter(function(filename) { return filename.slice(-3) === '.pd' })
+        .forEach(function(filename) {
+          var patchStr = fs.readFileSync(path.join(__dirname, 'patches', filename)).toString()
+            , patch = parsing.parse(patchStr)
+            , svgFilename = filename.slice(0, -3) + '.svg'
+          svgFilenames.push(svgFilename)
+          fs.writeFileSync(path.join(__dirname, 'rendered', svgFilename), svg.render(patch))
+        })
 
       // Put them all in a single HTML page
-      var template = fs.readFileSync(path.join(__dirname, 'rendered', 'embedded-in-a-page.hbs')).toString()
+      var template = fs.readFileSync(path.join(__dirname, 'patches', 'embedded-in-a-page.hbs')).toString()
         , images = ''
         , htmlFilename = path.join(__dirname, 'rendered', 'embedded-in-a-page.html')
       svgFilenames.forEach(function(filename) { images += '<img src="' + filename + '"/>' })
