@@ -168,18 +168,18 @@ describe('parsing', function() {
 
       assert.deepEqual(patch.nodes[9], 
         {id: 9, proto: 'symbolatom', args: [0, 0, '-', '-'], layout: {x: 255, y: 38, width: 10, labelPos: 0, label: '-'}})
-
-      assert.deepEqual(patch.nodes[10],
-        {id: 10, proto: 'text', args: ['bla bla bla bla'], layout: {x: 158, y: 309}})
       
-      assert.deepEqual(patch.nodes[11],
-        {id: 11, proto: 'vsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 458, y: 62, width: 15, height: 128, log: 0, 
+      assert.deepEqual(patch.nodes[10],
+        {id: 10, proto: 'vsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 458, y: 62, width: 15, height: 128, log: 0, 
           label: 'empty', labelX: 0, labelY: -9, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
           labelColor: -1, steadyOnClick: 1}})
 
-      assert.deepEqual(patch.nodes[12],
-        {id: 12, proto: 'hradio', args: [1, 0, 8, 'empty', 'empty', 0], layout: {x: 421, y: 258, size: 15, label: 'empty',
+      assert.deepEqual(patch.nodes[11],
+        {id: 11, proto: 'hradio', args: [1, 0, 8, 'empty', 'empty', 0], layout: {x: 69, y: 311, size: 15, label: 'empty',
           labelX: 0, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1, labelColor: -1}})
+
+      assert.deepEqual(patch.nodes[12],
+        {id: 12, proto: 'text', args: ['< this comment should be aligned to the hradio'], layout: {x: 205, y: 308}})
 
       assert.deepEqual(patch.connections, [
         { source: {id: 1, port: 0}, sink: {id: 0, port: 0} },
