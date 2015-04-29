@@ -142,12 +142,12 @@ describe('parsing', function() {
 
       assert.deepEqual(patch.nodes[3], 
         {id: 3, proto: 'tgl', args: [0, 'empty', 'empty', 0, 10], layout: {x: 144, y: 85, size: 15, label: 'empty',
-          labelX: 17, labelY: 7, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1, labelColor: -1}})
+          labelX: 17, labelY: 7, labelFont: 0, labelFontSize: 4, bgColor: -262144, fgColor: -1, labelColor: -262144}})
 
       assert.deepEqual(patch.nodes[4], 
-        {id: 4, proto: 'nbx', args: [-1e+37, 1e+37, 0, 'empty', 'empty'], layout: {x: 180, y: 42, size: 5, height: 14,
+        {id: 4, proto: 'nbx', args: [-1e+37, 1e+37, 1, 'empty', 'empty', 56789], layout: {x: 180, y: 42, size: 5, height: 14,
           log: 0, label: 'empty', labelX: 0, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
-          labelColor: -1, logHeight: 0}})
+          labelColor: -1, logHeight: 256}})
 
       assert.deepEqual(patch.nodes[5], 
         {id: 5, proto: 'hsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 242, y: 86, width: 128, height: 15, log: 0,
