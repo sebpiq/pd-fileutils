@@ -1,4 +1,4 @@
-#N canvas 487 433 838 432 10;
+#N canvas 359 214 838 432 10;
 #X floatatom 73 84 5 0 0 0 - - -;
 #X msg 73 43 89;
 #X obj 142 42 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144 -1
@@ -7,21 +7,19 @@
 0 10;
 #X obj 180 42 nbx 5 14 -1e+37 1e+37 0 1 empty empty empty 0 -8 0 10
 -262144 -1 -1 56789 256;
-#X obj 242 86 hsl 128 15 0 127 0 0 empty empty empty -2 -8 0 10 -262144
--1 -1 0 1;
+#X obj 242 86 hsl 128 15 0 1270 0 1 empty empty empty -2 -8 0 10 -262144
+-1 -1 5800 1;
 #X obj 249 137 vradio 15 1 0 8 empty empty empty 0 -8 0 10 -262144
 -1 -1 0;
 #X obj 89 141 vu 15 120 empty empty -1 -8 0 10 -66577 -1 1 0;
 #X obj 317 154 cnv 15 100 60 empty empty empty 20 12 0 14 -233017 -66577
 0;
 #X symbolatom 255 38 10 0 0 0 - - -;
-#X obj 458 62 vsl 15 128 0 127 0 0 empty empty empty 0 -9 0 10 -262144
--1 -1 0 1;
+#X obj 458 62 vsl 15 128 0 12700 0 1 empty empty empty 0 -9 0 10 -262144
+-1 -1 9500 1;
 #X obj 69 311 hradio 15 1 0 8 empty empty empty 0 -8 0 10 -262144 -1
 -1 0;
 #X text 205 308 < this comment should be aligned to the hradio;
 #X connect 1 0 0 0;
 #X connect 2 0 0 0;
-#X connect 2 0 3 0;
-#X connect 4 0 3 0;
 #X connect 6 0 4 0;

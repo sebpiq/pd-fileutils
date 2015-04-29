@@ -150,7 +150,7 @@ describe('parsing', function() {
           labelColor: -1, logHeight: 256}})
 
       assert.deepEqual(patch.nodes[5], 
-        {id: 5, proto: 'hsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 242, y: 86, width: 128, height: 15, log: 0,
+        {id: 5, proto: 'hsl', args: [0, 1270, 1, 'empty', 'empty', 580], layout: {x: 242, y: 86, width: 128, height: 15, log: 0,
           label: 'empty', labelX: -2, labelY: -8, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
           labelColor: -1, steadyOnClick: 1}})
 
@@ -168,9 +168,9 @@ describe('parsing', function() {
 
       assert.deepEqual(patch.nodes[9], 
         {id: 9, proto: 'symbolatom', args: [0, 0, '-', '-'], layout: {x: 255, y: 38, width: 10, labelPos: 0, label: '-'}})
-      
+
       assert.deepEqual(patch.nodes[10],
-        {id: 10, proto: 'vsl', args: [0, 127, 0, 'empty', 'empty', 0], layout: {x: 458, y: 62, width: 15, height: 128, log: 0, 
+        {id: 10, proto: 'vsl', args: [0, 12700, 1, 'empty', 'empty', 9500], layout: {x: 458, y: 62, width: 15, height: 128, log: 0, 
           label: 'empty', labelX: 0, labelY: -9, labelFont: 0, labelFontSize: 10, bgColor: -262144, fgColor: -1,
           labelColor: -1, steadyOnClick: 1}})
 
@@ -184,8 +184,6 @@ describe('parsing', function() {
       assert.deepEqual(patch.connections, [
         { source: {id: 1, port: 0}, sink: {id: 0, port: 0} },
         { source: {id: 2, port: 0}, sink: {id: 0, port: 0} },
-        { source: {id: 2, port: 0}, sink: {id: 3, port: 0} },
-        { source: {id: 4, port: 0}, sink: {id: 3, port: 0} },
         { source: {id: 6, port: 0}, sink: {id: 4, port: 0} }
       ])
 
