@@ -277,6 +277,13 @@ describe('parsing', function() {
 
     })
 
+    it('should parse object size as saved in pd vanilla', function() {
+      var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'object-size-pd-vanilla.pd')).toString()
+        , patch = parsing.parse(patchStr)
+      assert.equal(patch.nodes[0].layout.width, 30)
+      assert.equal(patch.nodes[1].layout.width, 40)
+    })
+
     it('should fail with an unknown element', function() {
         var patchStr = '#N canvas 778 17 450 300 10;\n'
           + '#X obj 14 13 loadbang;\n'

@@ -144,6 +144,20 @@ Renders the `patch` object to a string in the Pd file format.
 Renders the `patch` object to a string in SVG format
 
 
+Contributions
+===============
+
+Are most welcome. There is still a lot of work to do there. Fork the project, make your changes and send me a pull request.
+
+
+Running the tests
+------------------
+
+Tests run with mocha, so you need to install it first with `npm install -g mocha`. Then you can run the tests with :
+
+`npm test`
+
+
 History
 ========
 
