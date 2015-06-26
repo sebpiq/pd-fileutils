@@ -73,7 +73,7 @@ _.extend(Patch.prototype, {
 
 })
 
-},{"underscore":9}],3:[function(require,module,exports){
+},{"underscore":12}],3:[function(require,module,exports){
 /*
  * Copyright (c) 2012-2013 Sébastien Piquemal <sebpiq@gmail.com>
  *
@@ -91,12 +91,16 @@ var _ = require('underscore')
   , NODES = ['obj', 'floatatom', 'symbolatom', 'msg', 'text']
   // Regular expression to split tokens in a message.
   , tokensRe = / |\r\n?|\n/
-  // Regular expression to detect escaped dollar vars.
+  , afterCommaRe = /,(?!\\)/
+  // Regular expressions to detect escaped special chars.
   , escapedDollarVarReGlob = /\\(\$\d+)/g
   , escapedCommaVarReGlob = /\\\,/g
   , escapedSemicolonVarReGlob = /\\\;/g
   // Regular expression for finding valid lines of Pd in a file
   , linesRe = /(#((.|\r|\n)*?)[^\\\\])\r{0,1}\n{0,1};\r{0,1}(\n|$)/i
+
+// Helper function to reverse a string
+var _reverseString = function(s) { return s.split("").reverse().join("") }
 
 // Parses argument to a string or a number.
 var parseArg = exports.parseArg = function(arg) {
@@ -156,7 +160,13 @@ var recursParse = function(txt) {
   linesRe.lastIndex = 0 // reset lastIndex, in case the previous call threw an error
 
   while (line = txt.match(linesRe)) {
-    var tokens = line[1].split(tokensRe)
+    // In order to support object width, pd vanilla adds something like ", f 10" at the end
+    // of the line. So we need to look for non-escaped comma, and get that part after it.
+    // Doing that is annoying in JS since regexps have no look-behind assertions.
+    // The hack is to reverse the string, and use a regexp look-forward assertion.
+    var lineParts = _reverseString(line[1]).split(afterCommaRe).reverse().map(_reverseString)
+      , lineAfterComma = lineParts[1]
+      , tokens = lineParts[0].split(tokensRe)
       , chunkType = tokens[0]
 
     //================ #N : frameset ================//
@@ -217,7 +227,6 @@ var recursParse = function(txt) {
         }]
 
       // ---- NODES : object/control instantiation ---- //
-      // TODO: text is not a node
       } else if (_.contains(NODES, elementType)) {
         var proto  // the object name
           , args   // the construction args for the object
@@ -240,6 +249,18 @@ var recursParse = function(txt) {
         result = parseControls(proto, args, layout)
         args = result[0]
         layout = result[1]
+
+        // Handling stuff after the comma
+        // I have no idea what's the specification for this, so this is really reverse
+        // engineering on what appears in pd files.
+        if (lineAfterComma) {
+          var afterCommaTokens = lineAfterComma.split(tokensRe)
+          while (afterCommaTokens.length) {
+            var command = afterCommaTokens.shift()
+            if (command === 'f')
+              layout.width = afterCommaTokens.shift()
+          }
+        }
 
         // Add the object to the graph
         patch.nodes.push({
@@ -334,13 +355,14 @@ var parseControls = function(proto, args, layout) {
     // <init> <send> <receive> <init_value> <default_value>
     args = [args[1], args[2], args[3], args[12], args[13]]
   } else if (proto === 'nbx') {
+    // !!! doc is inexact here, logHeight is not at the specified position, and initial value of the nbx was missing.
     // <size> <height> <min> <max> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <log_height>
     layout.size = args[0] ; layout.height = args[1] ; layout.log = args[4]
     layout.label = args[8] ; layout.labelX = args[9] ; layout.labelY = args[10]
     layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
-    layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.logHeight = args[16]
+    layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.logHeight = args[17]
     // <min> <max> <init> <send> <receive>
-    args = [args[2], args[3], args[5], args[6], args[7]]
+    args = [args[2], args[3], args[5], args[6], args[7], args[16]]
   } else if (proto === 'vsl') {
     // <width> <height> <bottom> <top> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value> <steady_on_click>
     layout.width = args[0] ; layout.height = args[1] ; layout.log = args[4]
@@ -348,7 +370,7 @@ var parseControls = function(proto, args, layout) {
     layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
     layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.steadyOnClick = args[17]
     // <bottom> <top> <init> <send> <receive> <default_value>
-    args = [args[2], args[3], args[5], args[6], args[7], args[16]]
+    args = [args[2], args[3], args[5], args[6], args[7], args[2] + (args[3] - args[2]) * args[16] / 12700]
   } else if (proto === 'hsl') {
     // <width> <height> <bottom> <top> <log> <init> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value> <steady_on_click>
     layout.width = args[0] ; layout.height = args[1] ; layout.log = args[4]
@@ -356,7 +378,7 @@ var parseControls = function(proto, args, layout) {
     layout.labelFont = args[11] ; layout.labelFontSize = args[12] ; layout.bgColor = args[13]
     layout.fgColor = args[14] ; layout.labelColor = args[15] ; layout.steadyOnClick = args[17]
     // <bottom> <top> <init> <send> <receive> <default_value>
-    args = [args[2], args[3], args[5], args[6], args[7], args[16]]
+    args = [args[2], args[3], args[5], args[6], args[7], args[2] + (args[3] - args[2]) * args[16] / 12700]
   } else if (proto === 'vradio') {
     // <size> <new_old> <init> <number> <send> <receive> <label> <x_off> <y_off> <font> <fontsize> <bg_color> <fg_color> <label_color> <default_value>
     layout.size = args[0] ; layout.label = args[6] ; layout.labelX = args[7]
@@ -394,7 +416,7 @@ var parseControls = function(proto, args, layout) {
 
 }
 
-},{"underscore":9}],4:[function(require,module,exports){
+},{"underscore":12}],4:[function(require,module,exports){
 var mustache = require('mustache')
   , _ = require('underscore')
 
@@ -436,7 +458,8 @@ var floatAtomTpl = '#X floatatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}
   , cnvTpl = '#X obj {{{layout.x}}} {{{layout.y}}} cnv {{{layout.size}}} {{{layout.width}}} {{{layout.height}}} {{{args.0}}} {{{args.1}}} {{{layout.label}}} {{{layout.labelX}}} {{{layout.labelY}}} {{{layout.labelFont}}} {{{layout.labelFontSize}}} {{{layout.bgColor}}} {{{layout.labelColor}}} {{{args.2}}}'
   , objTpl = '#X obj {{{layout.x}}} {{{layout.y}}} {{{proto}}}{{#args}} {{.}}{{/args}}'
 
-},{"mustache":8,"underscore":9}],5:[function(require,module,exports){
+},{"mustache":11,"underscore":12}],5:[function(require,module,exports){
+(function (__dirname){
 /*
  * Copyright (c) 2012-2013 Sébastien Piquemal <sebpiq@gmail.com>
  *
@@ -451,15 +474,26 @@ var floatAtomTpl = '#X floatatom {{{layout.x}}} {{{layout.y}}} {{{layout.width}}
 var _ = require('underscore')
   , d3 = require('d3')
   , Patch = require('./Patch')
+  , isBrowser = (typeof window !== 'undefined')
+
+if (!isBrowser) {
+  var fs = require('fs')
+    , path = require('path')
+    , defaultStyle = fs.readFileSync(path.join(__dirname, 'svg-default-style.css')).toString()
+}
 
 var defaults = {
   portletWidth: 5,
   portletHeight: 3.5,
   objMinWidth: 25,
-  objMinHeight: 15,
+  objMinHeight: 20,
   ratio: 1.2,
   padding: 10,
-  svgFile: true
+  glyphWidth: 8,
+  glyphHeight: 9,
+  textPadding: 6,
+  svgFile: true,
+  style: isBrowser ? null : defaultStyle
 }
 
 exports.render = function(patch, opts) {
@@ -469,11 +503,14 @@ exports.render = function(patch, opts) {
   d3.select('svg').remove()
   var svgContainer = d3.select('body').append('div')
     , svg = svgContainer.append('svg')
-      .attr('style', 'font-family:monospace')
       .attr('xmlns', 'http://www.w3.org/2000/svg')
       .attr('version', '1.1')
     , root = svg.append('g')
     , connections, nodes
+
+  if (opts.style) {
+    svg.append('style').text(opts.style)
+  }
 
   // Creating all renderers
   patch = new Patch(patch)
@@ -504,6 +541,7 @@ exports.render = function(patch, opts) {
       return 'translate(' + renderer.getX() + ' ' + renderer.getY() + ')'
     })
     .attr('class', 'node')
+    .attr('id', function(node) { return node.id })
     .each(function(renderer, i) { renderer.render(d3.select(this)) })
 
   // Render the connections
@@ -670,8 +708,7 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
       .attr('class', 'proto')
       .text(this.getText())
       .attr('dy', this.getTextY())
-      .attr('dx', this.opts.portletWidth)
-      .attr('style', 'font-size:10px;')
+      .attr('dx', this.opts.textPadding)
   },
 
   renderInlets: function(g) { this._genericRenderPortlets('inlet', g) },
@@ -697,7 +734,7 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
   // Returns object width
   getW: function() {
     var maxPortlet = Math.max(this.node.inlets, this.node.outlets)
-      , textLength = this.getText().length * 6 + 10 // 6 = char width, 10 = padding
+      , textLength = this.getText().length * this.opts.glyphWidth + this.opts.textPadding * 2
     return Math.max((maxPortlet-1) * this.opts.objMinWidth, this.opts.objMinWidth, textLength)
   },
 
@@ -705,7 +742,7 @@ _.extend(ObjectRenderer.prototype, NodeRenderer.prototype, {
   getText: function() { return this.node.proto + ' ' + this.node.args.join(' ') },
 
   // Returns text Y relatively to the object 
-  getTextY: function() { return this.getH()/2 + 11/2.5 }, // 11 is font height
+  getTextY: function() { return this.getH()/2 + this.opts.glyphHeight/2 }, 
 
   // ---- Implement virtual methods ---- //
   getOutletRelX: function(outlet) {
@@ -1049,16 +1086,305 @@ _.extend(TextRenderer.prototype, NodeRenderer.prototype, {
   render: function(g) {
     g.append('text')
       .attr('class', 'comment')
-      .attr('style', 'font-size:10px;')
       .text(this.node.args[0])
+      .attr('dy', this.getH()/2 + this.opts.glyphHeight/2)
   },
-  // TODO : implement more properly
-  getW: function() { return this.node.args[0].length * 10 },
-  getH: function() { return 20 }
+  getW: function() { return this.node.args[0].length * this.opts.glyphWidth + this.opts.textPadding * 2 },
+  getH: function() { return this.opts.objMinHeight }
 
 })
 
-},{"./Patch":2,"d3":7,"underscore":9}],6:[function(require,module,exports){
+}).call(this,"/lib")
+},{"./Patch":2,"d3":10,"fs":6,"path":7,"underscore":12}],6:[function(require,module,exports){
+
+},{}],7:[function(require,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+}
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+var splitPathRe =
+    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function(filename) {
+  return splitPathRe.exec(filename).slice(1);
+};
+
+// path.resolve([from ...], to)
+// posix version
+exports.resolve = function() {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+    // Skip empty and invalid entries
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+
+  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+// path.normalize(path)
+// posix version
+exports.normalize = function(path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/';
+
+  // Normalize the path
+  path = normalizeArray(filter(path.split('/'), function(p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+};
+
+// posix version
+exports.isAbsolute = function(path) {
+  return path.charAt(0) === '/';
+};
+
+// posix version
+exports.join = function() {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function(p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+    return p;
+  }).join('/'));
+};
+
+
+// path.relative(from, to)
+// posix version
+exports.relative = function(from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
+
+  function trim(arr) {
+    var start = 0;
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
+
+    var end = arr.length - 1;
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
+
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
+
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
+
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function(path) {
+  var result = splitPath(path),
+      root = result[0],
+      dir = result[1];
+
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+
+  return root + dir;
+};
+
+
+exports.basename = function(path, ext) {
+  var f = splitPath(path)[2];
+  // TODO: make this comparison case-insensitive on windows?
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+  return f;
+};
+
+
+exports.extname = function(path) {
+  return splitPath(path)[3];
+};
+
+function filter (xs, f) {
+    if (xs.filter) return xs.filter(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        if (f(xs[i], i, xs)) res.push(xs[i]);
+    }
+    return res;
+}
+
+// String.prototype.substr - negative index don't work in IE8
+var substr = 'ab'.substr(-1) === 'b'
+    ? function (str, start, len) { return str.substr(start, len) }
+    : function (str, start, len) {
+        if (start < 0) start = str.length + start;
+        return str.substr(start, len);
+    }
+;
+
+}).call(this,require('_process'))
+},{"_process":8}],8:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+var queue = [];
+var draining = false;
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
+    }
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
+    }
+};
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],9:[function(require,module,exports){
 d3 = function() {
   var π = Math.PI, ε = 1e-6, d3 = {
     version: "3.0.8"
@@ -8860,10 +9186,10 @@ d3 = function() {
   };
   return d3;
 }();
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 require("./d3");
 module.exports = d3;
-},{"./d3":6}],8:[function(require,module,exports){
+},{"./d3":9}],11:[function(require,module,exports){
 /*!
  * mustache.js - Logic-less {{mustache}} templates with JavaScript
  * http://github.com/janl/mustache.js
@@ -9416,7 +9742,7 @@ module.exports = d3;
 
 }));
 
-},{}],9:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.

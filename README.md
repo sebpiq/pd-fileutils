@@ -153,13 +153,27 @@ Are most welcome. There is still a lot of work to do there. Fork the project, ma
 Running the tests
 ------------------
 
-Tests run with mocha, so you need to install it first with `npm install -g mocha`. Then you can run the tests with :
+Running tests require `mocha`. Run with :
 
 `npm test`
 
 
+Building from source to dist/
+-------------------------------
+
+Building requires `browserify` and `uglifyjs`. Run with : 
+
+`npm run build`
+
+
 History
 ========
+
+0.3.4
+------
+
+- parsing handles infos after the comma on a object definition line
+
 
 0.3
 ----

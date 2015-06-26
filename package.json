@@ -1,6 +1,6 @@
 {
   "name": "pd-fileutils",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "global": true,
   "description": "A set of utilities for Pure Data files : parser, image generator.",
   "main": "index.js",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "test": "mocha --recursive test/",
-    "build": "browserify index.js > dist/pd-fileutils-latest.js"
+    "build": "browserify index.js > dist/pd-fileutils-latest.js ; uglifyjs dist/pd-fileutils-latest.js > dist/pd-fileutils-latest.min.js "
   },
   "bin": {
     "pd-fileutils": "./bin/pd-fileutils"
