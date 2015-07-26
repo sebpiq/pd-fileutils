@@ -3,16 +3,19 @@ var path = require('path')
   , assert = require('assert')
   , parsing = require('../lib/parsing')
   , pdRendering = require('../lib/pd-rendering')
+  , NEWLINE_REGEX = /\r?\n/;
 
 describe('pd-rendering', function() {
 
   describe('#render', function() {
 
     it('should succeed parsing/rendering all test patches identically', function() {
-      // TODO
       var patchFile = fs.readFileSync(path.join(__dirname, 'patches', 'simple.pd')).toString()
         , simplePatch = parsing.parse(patchFile)
-      assert.equal(pdRendering.render(simplePatch), patchFile)
+      assert.deepEqual(
+        pdRendering.render(simplePatch).split(NEWLINE_REGEX),
+        patchFile.split(NEWLINE_REGEX)
+      );
     })
 
   })
