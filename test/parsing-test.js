@@ -1,7 +1,7 @@
 var path = require('path')
   , fs = require('fs')
   , assert = require('assert')
-  , parsing = require('../lib/parsing')
+  , parsing = require('pd-fileutils.parser')
 
 // round a number to a given number of decimal places
 var round = function(num, dec) {

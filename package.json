@@ -8,6 +8,7 @@
     "test": "test"
   },
   "dependencies": {
+    "pd-fileutils.parser": "0.3.4",
     "underscore": "1.4.x",
     "d3": "3.5.3",
     "mustache": "0.7.x"
@@ -36,5 +37,5 @@
     "email": "sebpiq@gmail.com",
     "url": "http://funktion.fm/"
   },
-  "license": "Standard Improved BSD License"
+  "license": "BSD-2-Clause"
 }

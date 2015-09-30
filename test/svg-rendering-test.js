@@ -2,7 +2,7 @@ var path = require('path')
   , fs = require('fs')
   , assert = require('assert')
   , mustache = require('mustache')
-  , parsing = require('../lib/parsing')
+  , parsing = require('pd-fileutils.parser')
   , svg = require('../lib/svg-rendering')
 
 describe('svg-rendering', function() {

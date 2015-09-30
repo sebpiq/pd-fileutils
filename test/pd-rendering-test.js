@@ -1,7 +1,7 @@
 var path = require('path')
   , fs = require('fs')
   , assert = require('assert')
-  , parsing = require('../lib/parsing')
+  , parsing = require('pd-fileutils.parser')
   , pdRendering = require('../lib/pd-rendering')
   , NEWLINE_REGEX = /\r?\n/;
 
