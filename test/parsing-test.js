@@ -141,7 +141,7 @@ describe('parsing', function() {
           bgColor: -262144, fgColor: -1, labelColor: -1, hold: 250, interrupt: 50}})
 
       assert.deepEqual(patch.nodes[3], 
-        {id: 3, proto: 'tgl', args: [0, 'empty', 'empty', 0, 10], layout: {x: 144, y: 85, size: 15, label: 'empty',
+        {id: 3, proto: 'tgl', args: [1, 'tglSendBla', 'tglRcvBla', 10, 10], layout: {x: 144, y: 85, size: 15, label: 'empty',
           labelX: 17, labelY: 7, labelFont: 0, labelFontSize: 4, bgColor: -262144, fgColor: -1, labelColor: -262144}})
 
       assert.deepEqual(patch.nodes[4], 
