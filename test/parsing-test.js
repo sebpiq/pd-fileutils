@@ -223,6 +223,36 @@ describe('parsing', function() {
       })
     })
 
+    it('should parse graph rightly', function() {
+      var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'graphs.pd')).toString()
+        , patch = parsing.parse(patchStr)
+
+      var graph = patch.nodes[0].subpatch
+      patch.nodes[0].subpatch = null
+
+      assert.deepEqual(patch, {
+        nodes: [
+          {
+            id: 0,
+            subpatch: null,
+            proto: 'graph',
+            args: [],
+            layout: { x: 100, y: 20 }
+          }
+        ],
+        connections: [],
+        layout: { x: 49, y: 82, width: 450, height: 300, openOnLoad: undefined },
+        args: [10] 
+      })
+
+      assert.deepEqual(graph, { 
+        nodes: [],
+        connections: [],
+        layout: { x: 0, y: 0, width: 450, height: 300, openOnLoad: '0' },
+        args: ['(subpatch)'] 
+      })
+    })
+
     it('should parse subpatches rightly', function() {
       var patchStr = fs.readFileSync(path.join(__dirname, 'patches', 'subpatches.pd')).toString()
         , patch = parsing.parse(patchStr)
