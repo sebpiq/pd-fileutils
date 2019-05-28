@@ -10,7 +10,7 @@
   "dependencies": {
     "pd-fileutils.parser": "0.3.4",
     "underscore": "1.4.x",
-    "d3": "3.5.3",
+    "d3": "5.9.2",
     "mustache": "0.7.x"
   },
   "devDependencies": {
