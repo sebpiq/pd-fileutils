@@ -167,6 +167,12 @@ Building from source to dist/
 History
 ========
 
+0.4
+------
+
+- update all dependencies + move to webpack
+
+
 0.3.4
 ------
 
