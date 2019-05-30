@@ -8,18 +8,23 @@
     "test": "test"
   },
   "dependencies": {
+    "d3-selection": "^1.4.0",
+    "d3-shape": "^1.3.5",
+    "jsdom": "15.1.x",
+    "mustache": "3.0.x",
     "pd-fileutils.parser": "0.3.4",
-    "underscore": "1.4.x",
-    "d3": "5.9.2",
-    "mustache": "0.7.x"
+    "underscore": "1.4.x"
   },
   "devDependencies": {
-    "browserify": "8.1.x",
-    "mocha": "2.1.x"
+    "css-loader": "^2.1.1",
+    "mocha": "6.1.x",
+    "to-string-loader": "^1.1.5",
+    "webpack": "^4.32.2",
+    "webpack-cli": "^3.3.2"
   },
   "scripts": {
     "test": "mocha --recursive test/",
-    "build": "browserify index.js > dist/pd-fileutils-latest.js ; uglifyjs dist/pd-fileutils-latest.js > dist/pd-fileutils-latest.min.js "
+    "build": "webpack-cli --mode production"
   },
   "bin": {
     "pd-fileutils": "./bin/pd-fileutils"

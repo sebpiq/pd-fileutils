@@ -1,16 +1,19 @@
 var path = require('path')
   , fs = require('fs')
-  , assert = require('assert')
+  , JSDOM = require('jsdom').JSDOM
   , mustache = require('mustache')
   , parsing = require('pd-fileutils.parser')
   , svg = require('../lib/svg-rendering')
+
+// Set global document for d3
+global.document = (new JSDOM('...')).window.document
 
 describe('svg-rendering', function() {
 
   describe('#render', function() {
 
     it('should succeed rendering a patch', function() {
-      var rendered = svg.render({
+      svg.render({
         nodes: [
           {id: 0, proto: 'loadbang', args: [], layout: {x: 14, y: 13}},
           {id: 1, proto: 'print', args: ['bla'], layout: {x: 14, y: 34}},

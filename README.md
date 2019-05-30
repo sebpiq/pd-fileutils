@@ -66,11 +66,11 @@ pd-fileutils myPatch.pd > myPatch.svg
 API documentation
 -------------------
 
-###Patch objects
+### Patch objects
 
 `pd-fileutils` deals with JavaScript objects representing patches.
 
-####Specification
+#### Specification
 
 Patch object :
 
@@ -118,7 +118,7 @@ And `<connectionK>` :
 ```
 
 
-###parse(pdFile)
+### parse(pdFile)
 
 Parses the string `pdFile` to a patch object. Example usage on `Node.js` :
 
@@ -134,12 +134,12 @@ patchStr = fs.readFileSync('./simple.pd').toString()
 patch = pdfu.parse(patchStr)
 ```
 
-###renderPd(patch)
+### renderPd(patch)
 
 Renders the `patch` object to a string in the Pd file format.
 
 
-###renderSvg(patch)
+### renderSvg(patch)
 
 Renders the `patch` object to a string in SVG format
 
@@ -160,8 +160,6 @@ Running tests require `mocha`. Run with :
 
 Building from source to dist/
 -------------------------------
-
-Building requires `browserify` and `uglifyjs`. Run with : 
 
 `npm run build`
 
