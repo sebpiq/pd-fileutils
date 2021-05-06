@@ -13,7 +13,7 @@
     "jsdom": "15.1.x",
     "mustache": "3.0.x",
     "pd-fileutils.parser": "0.3.4",
-    "underscore": "1.4.x"
+    "underscore": "1.12.x"
   },
   "devDependencies": {
     "css-loader": "^2.1.1",
