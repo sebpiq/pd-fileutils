@@ -1,7 +1,7 @@
 Pure Data file utilities
 ==========================
 
-[![Build Status](https://travis-ci.org/sebpiq/pd-fileutils.png)](https://travis-ci.org/sebpiq/pd-fileutils)
+[![Build Status](https://github.com/Wasted-Audio/pd-fileutils/actions/workflows/nodejs.yml/badge.svg)](https://github.com/Wasted-Audio/pd-fileutils/actions)
 
 This library is a set of tools for handling pure data files.
 

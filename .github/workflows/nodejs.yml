@@ -1,4 +1,4 @@
-name: Node.js CI
+name: pd-fileutils
 
 on:
   push:
