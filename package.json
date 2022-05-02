@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "css-loader": "6.5.x",
-    "mocha": "9.1.x",
+    "mocha": "10.0.x",
     "to-string-loader": "^1.1.5",
     "webpack": "5.64.x",
     "webpack-cli": "4.9.x"
