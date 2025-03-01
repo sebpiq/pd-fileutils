@@ -1,3 +1,15 @@
+**⚠️⚠️ DEPRECATED ⚠️⚠️**
+
+*The parser has moved there :* [https://github.com/sebpiq/WebPd_pd-parser](https://github.com/sebpiq/WebPd_pd-parser)
+It should be in pretty good shape, is developped actively, and should work out of the box.
+
+*The renderer has moved there :* [https://github.com/sebpiq/WebPd_pd-renderer](https://github.com/sebpiq/WebPd_pd-renderer)
+I haven't touched its code in a long while because I have been focusing on [WebPd](https://github.com/sebpiq/WebPd), and the renderer is not needed for it. 
+It should be easy enough to pick back up though, although that might require a bit of work.
+
+Contributions are welcome for both libraries above.
+
+
 Pure Data file utilities
 ==========================
 
